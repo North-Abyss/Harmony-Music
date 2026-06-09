@@ -55,7 +55,14 @@ graph TD
     
     Hardware --> Scanner[QR Code Scanner]
     Scanner --> ZXing[flutter_zxing - Barcode Decoding]
-    Scanner --> Camera[camera & camera_linux - Vision]
+    Scanner --> Camera[camera plugin - Live Feed]
+    Scanner --> FilePicker[file_picker - Linux Fallback]
+    
+    subgraph Automation
+      CI[GitHub Actions CI/CD] --> APK[Android APKs]
+      CI --> LNX[Linux Deb/Rpm/AppImage]
+      CI --> WIN[Windows Exe]
+    end
 ```
 
 

@@ -22,12 +22,34 @@ This document acts as the primary Agent Database and Context Memory for AI agent
 - **Sync with upstream**: `bash git-sync.sh` (Syncs with upstream and pushes tags/deployments)
 
 ## Project Structure
-- `lib/ui/screens/`: Main UI pages (Home, Search, Settings, Playlist, etc.)
-- `lib/ui/player/`: Audio player components (Mini player, Gesture player, Full player)
-- `lib/ui/widgets/`: Reusable UI components and bottom sheets
-- `lib/services/`: Core logic (MusicServices for API, YouTube parsing, etc.)
-- `lib/models/`: Data models (MediaItem, Playlist)
-- `lib/utils/`: Helpers, theme controllers, localization, and formatters
+
+```text
+/
+├── .github/                 # CI/CD and GitHub configuration
+│   ├── workflows/           # GitHub Actions pipelines
+│   │   ├── code_quality.yml # PR checker (Linter, Tests, test APK)
+│   │   ├── win_exe.yml      # Legacy Windows packaging script (includes code signing)
+│   │   └── release.yml      # Primary Multi-platform Release pipeline
+│   └── copilot-instructions.md # OG repo's AI guidelines
+├── fastlane/                # App store metadata (F-Droid / Play Store)
+├── win_cert/                # Windows digital signature certificates (.crt, .pem)
+├── lib/
+│   ├── base_class/          # Base classes and abstractions
+│   ├── mixins/              # Reusable GetX mixins
+│   ├── models/              # Data models (MediaItem, Playlist)
+│   ├── native_bindings/     # Platform-specific native code bindings
+│   ├── services/            # Business logic (MusicServices, API, extraction)
+│   ├── ui/                  # User Interface
+│   │   ├── player/          # Music player UI & PlayerController
+│   │   ├── screens/         # Main app screens (Home, Search, QrScanner)
+│   │   ├── utils/           # UI utilities and ThemeController
+│   │   └── widgets/         # Reusable widgets and bottom sheets
+│   └── utils/               # General helpers, localization, and formatters
+├── action.yml               # Custom Docker-based GitHub action for APK builds
+├── distribute_options.yaml  # Config for native .deb and .rpm packaging via flutter_distributor
+├── jnigen.yaml              # JNI bindings configuration for native Android C/C++ bridges
+└── git-sync.sh              # Custom Bash script for deployment & tagging
+```
 
 ### Architecture Overview
 
@@ -40,7 +62,14 @@ graph TD
     C --> E[Local Storage / Hive Database]
     C --> F[Network APIs / YouTube Extractor]
     H --> S[QR Scanning / flutter_zxing]
-    H --> Cam[Camera Access / camera_linux]
+    H --> Cam[Camera Access / camera]
+    H --> FP[Linux Fallback / file_picker]
+    
+    subgraph CI/CD
+      GH[GitHub Actions] --> APK[Android APKs]
+      GH --> LNX[Linux Deb/Rpm]
+      GH --> WIN[Windows Exe]
+    end
     
     subgraph UI Components
       A1[Home Screen]
