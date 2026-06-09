@@ -16,6 +16,7 @@ class SideNavBar extends StatelessWidget {
       child: isMobileOrTabScreen
           ? SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 80),
+              physics: const ClampingScrollPhysics(),
               child: IntrinsicHeight(
                 child: Obx(
                   () => NavigationRail(

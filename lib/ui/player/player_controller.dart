@@ -1,7 +1,12 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter_lyric/lyric_ui/ui_netease.dart';
 import 'package:hive/hive.dart';
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import '../navigator.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
@@ -106,6 +111,7 @@ class PlayerController extends GetxController
     _listenForChangesInDuration();
     _listenForPlaylistChange();
     _listenForKeyboardActivity();
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
     _setInitLyricsMode();
     final appPrefs = Hive.box("AppPrefs");
     isLoopModeEnabled.value = appPrefs.get("isLoopModeEnabled") ?? false;
@@ -137,6 +143,132 @@ class PlayerController extends GetxController
         CurvedAnimation(
             parent: gesturePlayerStateAnimationController!,
             curve: Curves.easeIn));
+  }
+
+  // Focus scope nodes for Tab navigation
+  final FocusScopeNode sidePanelFocus = FocusScopeNode(debugLabel: 'sidePanel');
+  final FocusScopeNode centerPanelFocus = FocusScopeNode(debugLabel: 'centerPanel');
+  final FocusScopeNode playerFocus = FocusScopeNode(debugLabel: 'player');
+  final FocusScopeNode searchFocus = FocusScopeNode(debugLabel: 'search');
+
+  bool _handleKeyEvent(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      final focusContext = FocusManager.instance.primaryFocus?.context;
+      final isTextFieldFocused = focusContext != null && 
+          (focusContext.widget is EditableText || focusContext.findAncestorWidgetOfExactType<TextField>() != null);
+
+      if (isTextFieldFocused) {
+        if (event.logicalKey == LogicalKeyboardKey.escape) {
+          FocusManager.instance.primaryFocus?.unfocus();
+          return true;
+        }
+        return false;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.tab) {
+        playerFocus.requestFocus();
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.keyS) {
+        searchFocus.requestFocus();
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.keyM) {
+        sidePanelFocus.requestFocus();
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.escape) {
+        if (playerPanelController.isPanelOpen) {
+          playerPanelController.close();
+          return true;
+        }
+        
+        final innerNav = Get.nestedKey(ScreenNavigationSetup.id)?.currentState;
+        if (innerNav != null && innerNav.canPop()) {
+          innerNav.pop();
+          return true;
+        } 
+        
+        if (Get.key.currentState?.canPop() ?? false) {
+          Get.back();
+          return true;
+        }
+
+        if (GetPlatform.isDesktop) {
+          exit(0);
+        } else {
+          SystemNavigator.pop();
+        }
+        return true;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.space || event.logicalKey == LogicalKeyboardKey.mediaPlayPause) {
+        playPause();
+        return true;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.keyN || event.logicalKey == LogicalKeyboardKey.mediaTrackNext) {
+        next();
+        return true;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.keyB || event.logicalKey == LogicalKeyboardKey.mediaTrackPrevious) {
+        prev();
+        return true;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.keyL) {
+        if (playerPanelController.isPanelOpen) {
+          showLyrics();
+          return true;
+        }
+        return false;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.keyP) {
+        if (GetPlatform.isDesktop) {
+          if (homeScaffoldkey.currentState?.isEndDrawerOpen ?? false) {
+            homeScaffoldkey.currentState?.closeEndDrawer();
+          } else {
+            homeScaffoldkey.currentState?.openEndDrawer();
+          }
+        } else {
+          if (queuePanelController.isPanelOpen) {
+            queuePanelController.close();
+          } else {
+            queuePanelController.open();
+          }
+        }
+        return true;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+        if (playerPanelController.isPanelOpen) {
+          seekForward();
+          return true;
+        }
+        return false;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+        if (playerPanelController.isPanelOpen) {
+          seekBackward();
+          return true;
+        }
+        return false;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+        if (playerPanelController.isPanelOpen) {
+          volumeUp();
+          return true;
+        }
+        return false;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+        if (playerPanelController.isPanelOpen) {
+          volumeDown();
+          return true;
+        }
+        return false;
+      }
+    }
+    return false;
   }
 
   void _setInitLyricsMode() {
@@ -809,27 +941,24 @@ class PlayerController extends GetxController
   }
 
   Future<void> translateLyrics() async {
-    isLyricsLoading.value = true;
     try {
-      String plain = lyrics["plainLyrics"] ?? "";
-      // If we only have synced lyrics, extract plain lyrics to translate
-      if ((plain.isEmpty || plain == "NA") && lyrics["synced"] != null && lyrics["synced"].toString().isNotEmpty) {
-        plain = lyrics["synced"].toString().replaceAll(RegExp(r'\[\d+:\d+\.\d+\]'), '');
-      }
-      if (plain.isNotEmpty && plain != "NA") {
-        final res = await Dio().get(
-            'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${Uri.encodeComponent(plain)}');
-        if (res.data != null && res.data.isNotEmpty) {
-          String translated = "";
-          for (var item in res.data[0]) {
-            translated += item[0];
-          }
-          lyrics.value = {
-            "synced": "", // clear synced as translation ruins timestamps
-            "plainLyrics": translated
-          };
-          lyricsMode.value = 1; // force plain view
-        }
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['lrc', 'txt'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        isLyricsLoading.value = true;
+        File file = File(result.files.single.path!);
+        String fileContent = await file.readAsString();
+        
+        bool hasTimestamps = fileContent.contains(RegExp(r'\[\d+:\d+\.\d+\]'));
+        
+        lyrics.value = {
+          "synced": hasTimestamps ? fileContent : "",
+          "plainLyrics": hasTimestamps ? "" : fileContent
+        };
+        lyricsMode.value = hasTimestamps ? 0 : 1; 
       }
     } catch (e) {
       printERROR(e);
@@ -893,6 +1022,7 @@ class PlayerController extends GetxController
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     _audioHandler.customAction('dispose');
     keyboardSubscription.cancel();
     scrollController.dispose();

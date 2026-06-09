@@ -43,9 +43,9 @@ class LyricsSwitch extends StatelessWidget {
                   ),
                   IconButton(
                     onPressed: () => playerController.translateLyrics(),
-                    icon: const Icon(Icons.translate),
+                    icon: const Icon(Icons.file_upload),
                     color: Colors.white,
-                    tooltip: "Translate to English",
+                    tooltip: "Pick Local Lyrics",
                   ),
                 ],
               ),

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 import '../../services/downloader.dart';
 import '../screens/Playlist/playlist_screen_controller.dart';
@@ -299,8 +300,21 @@ class SongInfoBottomSheet extends StatelessWidget {
               visualDensity: const VisualDensity(vertical: -1),
               leading: const Icon(Icons.share),
               title: Text("shareSong".tr),
-              onTap: () =>
-                  Share.share("https://youtube.com/watch?v=${song.id}"),
+              onTap: () {
+                Navigator.of(context).pop();
+                Share.share("https://youtube.com/watch?v=${song.id}");
+              },
+            ),
+            ListTile(
+              contentPadding: const EdgeInsets.only(left: 15),
+              visualDensity: const VisualDensity(vertical: -1),
+              leading: const Icon(Icons.copy),
+              title: Text("Copy Link"),
+              onTap: () {
+                Navigator.of(context).pop();
+                Clipboard.setData(ClipboardData(text: "https://youtube.com/watch?v=${song.id}"));
+                ScaffoldMessenger.of(context).showSnackBar(snackbar(context, "Link Copied!", size: SanckBarSize.MEDIUM));
+              },
             ),
           ],
         ),

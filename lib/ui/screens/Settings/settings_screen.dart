@@ -655,6 +655,27 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ]),
               CustomExpansionTile(
+                  icon: Icons.keyboard,
+                  title: "Keyboard Shortcuts",
+                  children: [
+                    ListTile(
+                      contentPadding: const EdgeInsets.only(left: 5, right: 10),
+                      title: const Text("Player Controls"),
+                      subtitle: Text(
+                        "Space: Play/Pause\nArrow Left/Right: Seek Backward/Forward (When Player is Open)\nArrow Up/Down: Volume Up/Down (When Player is Open)\nN: Next Track\nB: Previous Track\nL: Toggle Lyrics\nP: Toggle Queue",
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.only(left: 5, right: 10),
+                      title: const Text("Navigation"),
+                      subtitle: Text(
+                        "Esc: Unfocus text / Close Player / Go Back\nTab: Cycle Focus\nShift+Tab: Reverse Cycle Focus",
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  ]),
+              CustomExpansionTile(
                 icon: Icons.info,
                 title: "appInfo".tr,
                 children: [

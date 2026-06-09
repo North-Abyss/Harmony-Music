@@ -33,13 +33,41 @@ class SearchScreenController extends GetxController with ProcessLink {
     historyQuerylist.value = queryBox.values.toList().reversed.toList();
   }
 
+  int historyIndex = -1;
+
   Future<void> onChanged(String text) async {
+    historyIndex = -1;
     if(text.contains("https://")){
       urlPasted.value = true; 
       return;
     }
     urlPasted.value = false;
     suggestionList.value = await musicServices.getSearchSuggestion(text);
+  }
+
+  void arrowUp() {
+    final list = suggestionList.isEmpty && textInputController.text.isEmpty ? historyQuerylist : suggestionList;
+    if (list.isEmpty) return;
+    
+    if (historyIndex < list.length - 1) {
+      historyIndex++;
+      textInputController.text = list[historyIndex];
+      textInputController.selection = TextSelection.collapsed(offset: textInputController.text.length);
+    }
+  }
+
+  void arrowDown() {
+    final list = suggestionList.isEmpty && textInputController.text.isEmpty ? historyQuerylist : suggestionList;
+    if (list.isEmpty) return;
+
+    if (historyIndex > 0) {
+      historyIndex--;
+      textInputController.text = list[historyIndex];
+      textInputController.selection = TextSelection.collapsed(offset: textInputController.text.length);
+    } else if (historyIndex == 0) {
+      historyIndex = -1;
+      textInputController.text = "";
+    }
   }
 
   Future<void> suggestionInput(String txt) async {
@@ -68,6 +96,7 @@ class SearchScreenController extends GetxController with ProcessLink {
     urlPasted.value = false;
     textInputController.text = "";
     suggestionList.clear();
+    historyIndex = -1;
   }
 
   Future<void> removeQueryFromHistory(String txt) async {

@@ -62,19 +62,8 @@ class Home extends StatelessWidget {
           }
         }
       },
-      child: CallbackShortcuts(
-        bindings: {
-          LogicalKeySet(LogicalKeyboardKey.space): playerController.playPause,
-          LogicalKeySet(LogicalKeyboardKey.mediaPlayPause): playerController.playPause,
-          LogicalKeySet(LogicalKeyboardKey.mediaNextTrack): playerController.next,
-          LogicalKeySet(LogicalKeyboardKey.mediaPreviousTrack): playerController.prev,
-          LogicalKeySet(LogicalKeyboardKey.arrowRight): playerController.seekForward,
-          LogicalKeySet(LogicalKeyboardKey.arrowLeft): playerController.seekBackward,
-          LogicalKeySet(LogicalKeyboardKey.arrowUp): playerController.volumeUp,
-          LogicalKeySet(LogicalKeyboardKey.arrowDown): playerController.volumeDown,
-        },
-        child: Obx(
-          () => Scaffold(
+      child: Obx(
+        () => Scaffold(
               bottomNavigationBar: settingsScreenController
                       .isBottomNavBarEnabled.isTrue
                   ? ScrollToHideWidget(
@@ -84,8 +73,10 @@ class Home extends StatelessWidget {
                   : null,
               key: playerController.homeScaffoldkey,
               endDrawer: GetPlatform.isDesktop || isWideScreen
-                  ? Container(
-                      constraints: const BoxConstraints(maxWidth: 600),
+                  ? Material(
+                      type: MaterialType.transparency,
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 600),
                       decoration: BoxDecoration(
                         borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(10)),
@@ -190,7 +181,7 @@ class Home extends StatelessWidget {
                           ],
                         ),
                       ),
-                    )
+                    ))
                   : null,
               drawerScrimColor: Colors.transparent,
               body: Obx(() => SlidingUpPanel(
@@ -202,7 +193,10 @@ class Home extends StatelessWidget {
                     onSwipeUp: () {
                       playerController.queuePanelController.open();
                     },
-                    panel: const Player(),
+                    panel: FocusScope(
+                      node: playerController.playerFocus,
+                      child: const Player(),
+                    ),
                     body: const ScreenNavigation(),
                     header: !isWideScreen
                         ? InkWell(
@@ -211,7 +205,6 @@ class Home extends StatelessWidget {
                           )
                         : const MiniPlayer(),
                   ))),
-        ),
       ),
     );
   }

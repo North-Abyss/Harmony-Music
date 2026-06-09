@@ -347,7 +347,7 @@ class MiniPlayer extends StatelessWidget {
                                     padding: const EdgeInsets.only(
                                         right: 20, left: 10),
                                     height: 20,
-                                    width: (size.width > 860) ? 220 : 180,
+                                    width: (size.width > 860) ? 220 : 140,
                                     child: Obx(() {
                                       final volume =
                                           playerController.volume.value;
@@ -397,98 +397,101 @@ class MiniPlayer extends StatelessWidget {
                                   ),
                                   SizedBox(
                                     height: 40,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        IconButton(
-                                          onPressed: () {
-                                            playerController
-                                                .homeScaffoldkey.currentState!
-                                                .openEndDrawer();
-                                          },
-                                          icon: const Icon(Icons.queue_music),
-                                        ),
-                                        if (size.width > 860)
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 10.0),
-                                            child: IconButton(
-                                              onPressed: () {
-                                                showModalBottomSheet(
-                                                  constraints:
-                                                      const BoxConstraints(
-                                                          maxWidth: 500),
-                                                  shape:
-                                                      const RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.vertical(
-                                                            top:
-                                                                Radius.circular(
-                                                                    10.0)),
-                                                  ),
-                                                  isScrollControlled: true,
-                                                  context: playerController
-                                                      .homeScaffoldkey
-                                                      .currentState!
-                                                      .context,
-                                                  barrierColor: Colors
-                                                      .transparent
-                                                      .withAlpha(100),
-                                                  builder: (context) =>
-                                                      const SleepTimerBottomSheet(),
-                                                );
-                                              },
-                                              icon: Icon(playerController
-                                                      .isSleepTimerActive.isTrue
-                                                  ? Icons.timer
-                                                  : Icons.timer_outlined),
-                                            ),
-                                          ),
-                                        const SizedBox(
-                                          width: 10,
-                                        ),
-                                        const SongDownloadButton(
-                                          calledFromPlayer: true,
-                                        ),
-                                        const SizedBox(
-                                          width: 10,
-                                        ),
-                                        IconButton(
-                                          onPressed: () {
-                                            final currentSong = playerController
-                                                .currentSong.value;
-                                            if (currentSong != null) {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) =>
-                                                    AddToPlaylist(
-                                                        [currentSong]),
-                                              ).whenComplete(() => Get.delete<
-                                                  AddToPlaylistController>());
-                                            }
-                                          },
-                                          icon: const Icon(Icons.playlist_add),
-                                        ),
-                                        if (size.width > 965)
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
                                           IconButton(
                                             onPressed: () {
-                                              final currentSong =
-                                                  playerController
-                                                      .currentSong.value;
+                                              playerController
+                                                  .homeScaffoldkey.currentState!
+                                                  .openEndDrawer();
+                                            },
+                                            icon: const Icon(Icons.queue_music),
+                                          ),
+                                          if (size.width > 860)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 10.0),
+                                              child: IconButton(
+                                                onPressed: () {
+                                                  showModalBottomSheet(
+                                                    constraints:
+                                                        const BoxConstraints(
+                                                            maxWidth: 500),
+                                                    shape:
+                                                        const RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.vertical(
+                                                              top:
+                                                                  Radius.circular(
+                                                                      10.0)),
+                                                    ),
+                                                    isScrollControlled: true,
+                                                    context: playerController
+                                                        .homeScaffoldkey
+                                                        .currentState!
+                                                        .context,
+                                                    barrierColor: Colors
+                                                        .transparent
+                                                        .withAlpha(100),
+                                                    builder: (context) =>
+                                                        const SleepTimerBottomSheet(),
+                                                  );
+                                                },
+                                                icon: Icon(playerController
+                                                        .isSleepTimerActive.isTrue
+                                                    ? Icons.timer
+                                                    : Icons.timer_outlined),
+                                              ),
+                                            ),
+                                          const SizedBox(
+                                            width: 10,
+                                          ),
+                                          const SongDownloadButton(
+                                            calledFromPlayer: true,
+                                          ),
+                                          const SizedBox(
+                                            width: 10,
+                                          ),
+                                          IconButton(
+                                            onPressed: () {
+                                              final currentSong = playerController
+                                                  .currentSong.value;
                                               if (currentSong != null) {
                                                 showDialog(
                                                   context: context,
                                                   builder: (context) =>
-                                                      SongInfoDialog(
-                                                    song: currentSong,
-                                                  ),
-                                                );
+                                                      AddToPlaylist(
+                                                          [currentSong]),
+                                                ).whenComplete(() => Get.delete<
+                                                    AddToPlaylistController>());
                                               }
                                             },
-                                            icon: const Icon(Icons.info,
-                                                size: 22),
+                                            icon: const Icon(Icons.playlist_add),
                                           ),
-                                      ],
+                                          if (size.width > 965)
+                                            IconButton(
+                                              onPressed: () {
+                                                final currentSong =
+                                                    playerController
+                                                        .currentSong.value;
+                                                if (currentSong != null) {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) =>
+                                                        SongInfoDialog(
+                                                      song: currentSong,
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                              icon: const Icon(Icons.info,
+                                                  size: 22),
+                                            ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],

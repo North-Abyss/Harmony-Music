@@ -79,22 +79,28 @@ class HomeScreen extends StatelessWidget {
             children: <Widget>[
               // create a navigation rail
               settingsScreenController.isBottomNavBarEnabled.isFalse
-                  ? const SideNavBar()
+                  ? FocusScope(
+                      node: playerController.sidePanelFocus,
+                      child: const SideNavBar(),
+                    )
                   : const SizedBox(
                       width: 0,
                     ),
               //const VerticalDivider(thickness: 1, width: 2),
               Expanded(
-                child: Obx(() => AnimatedScreenTransition(
-                    enabled: settingsScreenController
-                        .isTransitionAnimationDisabled.isFalse,
-                    resverse: homeScreenController.reverseAnimationtransiton,
-                    horizontalTransition:
-                        settingsScreenController.isBottomNavBarEnabled.isTrue,
-                    child: Center(
-                      key: ValueKey<int>(homeScreenController.tabIndex.value),
-                      child: const Body(),
-                    ))),
+                child: FocusScope(
+                  node: playerController.centerPanelFocus,
+                  child: Obx(() => AnimatedScreenTransition(
+                      enabled: settingsScreenController
+                          .isTransitionAnimationDisabled.isFalse,
+                      resverse: homeScreenController.reverseAnimationtransiton,
+                      horizontalTransition:
+                          settingsScreenController.isBottomNavBarEnabled.isTrue,
+                      child: Center(
+                        key: ValueKey<int>(homeScreenController.tabIndex.value),
+                        child: const Body(),
+                      ))),
+                ),
               ),
             ],
           ),
@@ -232,9 +238,12 @@ class Body extends StatelessWidget {
                     width: constraints.maxWidth > 800
                         ? 800
                         : constraints.maxWidth - 40,
-                    child: const Padding(
-                        padding: EdgeInsets.only(top: 15.0),
-                        child: DesktopSearchBar()),
+                    child: Padding(
+                        padding: const EdgeInsets.only(top: 15.0),
+                        child: FocusScope(
+                          node: Get.find<PlayerController>().searchFocus,
+                          child: const DesktopSearchBar(),
+                        )),
                   );
                 }),
               )

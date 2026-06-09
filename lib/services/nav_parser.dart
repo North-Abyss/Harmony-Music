@@ -703,6 +703,7 @@ List<dynamic> parseSearchResults(List<dynamic> results,
     List<String> searchResultTypes, String? resultType, String category) {
   return results
       .map((result) {
+        if (result['musicResponsiveListItemRenderer'] == null) return null;
         return parseSearchResult(result['musicResponsiveListItemRenderer'],
             searchResultTypes, resultType, category);
       })

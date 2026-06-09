@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter/services.dart';
 
 import '/ui/screens/Artists/artist_screen_v2.dart';
 import '/ui/screens/Settings/settings_screen_controller.dart';
@@ -266,6 +267,17 @@ class AboutArtist extends StatelessWidget {
                                     splashRadius: 18,
                                     onPressed: () => Share.share(
                                         "https://music.youtube.com/channel/${artistScreenController.artist_.browseId}")),
+                                IconButton(
+                                    icon: const Icon(
+                                      Icons.copy,
+                                      size: 20,
+                                    ),
+                                    splashRadius: 18,
+                                    onPressed: () {
+                                      Clipboard.setData(ClipboardData(
+                                          text: "https://music.youtube.com/channel/${artistScreenController.artist_.browseId}"));
+                                      ScaffoldMessenger.of(context).showSnackBar(snackbar(context, "Link Copied!", size: SanckBarSize.MEDIUM));
+                                    }),
                               ],
                             ),
                           )

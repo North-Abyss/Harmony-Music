@@ -33,6 +33,27 @@ A cross platform app for music streaming made with Flutter(Android, Windows, lin
 * Piped playlist integration
 
 
+# Architecture
+```mermaid
+graph TD
+    UI[UI Layer - Flutter] --> GetX[GetX State Management]
+    
+    GetX --> Audio[Audio Layer]
+    GetX --> Network[Network Layer]
+    GetX --> Storage[Local Storage]
+    
+    Audio --> JustAudio[just_audio - Android]
+    Audio --> MediaKit[media_kit - Desktop]
+    Audio --> AudioService[audio_service - Background]
+    
+    Network --> YTM[YouTube Music API]
+    Network --> Lyrics[LRCLib Synced Lyrics API]
+    Network --> Piped[Piped API]
+    
+    Storage --> Hive[Hive Database - Cache/Bookmarks]
+```
+
+
 # Download
 * Pleass choose one source for android apk. you won't be able to update from cross build apk source.
 

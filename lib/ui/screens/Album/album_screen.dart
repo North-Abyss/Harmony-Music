@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:harmonymusic/models/playling_from.dart';
 import 'package:harmonymusic/models/thumbnail.dart';
 import 'package:harmonymusic/ui/widgets/playlist_album_scroll_behaviour.dart';
+import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:widget_marquee/widget_marquee.dart';
 
@@ -376,6 +377,20 @@ class AlbumScreen extends StatelessWidget {
                                                 Icons.share,
                                                 size: 20,
                                               )),
+                                          IconButton(
+                                            tooltip: "Copy Link",
+                                            visualDensity: const VisualDensity(vertical: -3),
+                                            splashRadius: 10,
+                                            onPressed: () {
+                                              Clipboard.setData(ClipboardData(
+                                                  text: "https://youtube.com/playlist?list=${albumController.album.value.audioPlaylistId}"));
+                                              ScaffoldMessenger.of(context).showSnackBar(snackbar(context, "Link Copied!", size: SanckBarSize.MEDIUM));
+                                            },
+                                            icon: const Icon(
+                                              Icons.copy,
+                                              size: 20,
+                                            ),
+                                          ),
                                         ],
                                       )),
                                 );
