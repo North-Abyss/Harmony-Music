@@ -654,11 +654,46 @@ class MusicServices extends getx.GetxService {
 
     results = nav(results, ['sectionListRenderer', 'contents']);
 
-    if (results.length == 1 && results[0]['itemSectionRenderer'] != null) {
-      return searchResults;
-    }
+    // if (results.length == 1 && results[0]['itemSectionRenderer'] != null) {
+    //   return searchResults;
+    // }
 
     String? type;
+
+    // Aggregate items if they are in itemSectionRenderer (new API behavior)
+    List<dynamic> aggregatedItemResults = [];
+    for (var res in results) {
+      if (res['itemSectionRenderer'] != null &&
+          res['itemSectionRenderer']['contents'] != null) {
+        aggregatedItemResults.addAll(res['itemSectionRenderer']['contents']);
+      }
+    }
+
+    if (aggregatedItemResults.isNotEmpty) {
+      // Process the aggregated items as a single shelf
+      String? typeFilter = filter;
+      String category = filter == null ? "mixed" : "Search Results";
+
+      final mixedItems = parseSearchResults(aggregatedItemResults,
+          ['artist', 'playlist', 'song', 'video', 'station'], type, category);
+
+      if (filter == null) {
+        for (var item in mixedItems) {
+          final itemType = item.runtimeType == MediaItem
+              ? (item.artist.split(",")[0]) + "s"
+              : "${item.runtimeType}s";
+          if (searchResults.containsKey(itemType) &&
+              (searchResults[itemType]).length < 3) {
+            (searchResults[itemType] as List).add(item);
+          } else if (!searchResults.containsKey(itemType)) {
+            searchResults[itemType] = [item];
+          }
+        }
+      } else {
+        searchResults[category] = mixedItems;
+      }
+      type = typeFilter?.substring(0, typeFilter.length - 1).toLowerCase();
+    }
 
     for (var res in results) {
       String category;

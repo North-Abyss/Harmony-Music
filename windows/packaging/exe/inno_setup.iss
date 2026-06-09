@@ -2,10 +2,10 @@
 AppId=B9F6E402-0CAE-4045-BDE6-14BD6C39C4EA
 AppVersion=1.12.2+27
 AppName=Harmony Music
-AppPublisher=anandnet
-AppPublisherURL=https://github.com/anandnet/Harmony-Music
-AppSupportURL=https://github.com/anandnet/Harmony-Music
-AppUpdatesURL=https://github.com/anandnet/Harmony-Music
+AppPublisher=North-Abyss
+AppPublisherURL=https://github.com/North-Abyss/Harmony-Music
+AppSupportURL=https://github.com/North-Abyss/Harmony-Music
+AppUpdatesURL=https://github.com/North-Abyss/Harmony-Music
 DefaultDirName={autopf}\harmonymusic
 DisableProgramGroupPage=yes
 OutputDir=.

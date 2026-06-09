@@ -6,11 +6,11 @@ This file tracks ongoing issues, feature requests, and bug reports for faster cl
 
 ## 🐛 Bugs
 
-### 1. YouTube Music search not working
+### 1. Lyrics Reload button does not work
 - **Priority**: High
 - **Status**: Open
-- **Description**: Search functionality for YouTube Music is broken — queries return no results or fail silently.
-- **Notes**: May be related to `youtube_explode_dart` API changes upstream.
+- **Description**: Lyrics Reload button needed if the lyrics fail to load and happens lot.
+- **Notes**: "There is no lyrics reload button on the lyrics screen. It should reload the lyrics when clicked." 
 
 ### 2. Build fails on Chrome (web target)
 - **Priority**: Medium
@@ -18,12 +18,6 @@ This file tracks ongoing issues, feature requests, and bug reports for faster cl
 - **Description**: `flutter run -d chrome` fails due to multiple packages using `dart:ffi` which is unavailable on the web platform.
 - **Affected packages**: `audiotags`, `jni`, `smtc_windows`, `media_kit_libs_linux`
 - **Notes**: Web support would require conditional imports or web-compatible alternatives for these packages.
-
-### 3. ListTile decoration warnings in debug mode
-- **Priority**: Low
-- **Status**: Open
-- **Description**: Multiple "ListTile background color or ink splashes may be invisible" assertion warnings in debug mode. ListTiles wrapped in DecoratedBox with background color hide ink effects.
-- **Notes**: Non-critical — wrap ListTiles in their own Material widget or remove background from DecoratedBox.
 
 ---
 
@@ -35,11 +29,25 @@ This file tracks ongoing issues, feature requests, and bug reports for faster cl
 - **Description**: Add keyboard shortcuts for all playback controls (play/pause, next, previous, volume, seek, etc.) to improve desktop usability.
 - **Notes**: Relevant for Linux, Windows, macOS, and Web platforms.
 
+### 2. Lyrics english Translate to english option
+- **Priority**: Medium
+- **Status**: Open
+- **Description**: Lyrics to be in english translation by using opensource lyrics sights or something.
+- **Notes**: "There is no lyrics translate to english option on the lyrics screen. It should translate the lyrics to english when clicked."
+
 ---
 
 ## ✅ Resolved
 
-### 1. `ionicons` package breaks with Flutter 3.44+ (IconData is final)
+### 1. Update setting app info to both the og repo and say this repo as new continuer and update readme
+- **Fix**: Updated `README.md` and `lib/ui/screens/Settings/settings_screen.dart` to clearly state that this is a continued fork maintained by North-Abyss, while keeping credits to the original developer anandnet.
+- **Files changed**: `README.md`, `lib/ui/screens/Settings/settings_screen.dart`, `lib/utils/helper.dart`, `lib/ui/widgets/new_version_dialog.dart`, `lib/models/playlist.dart`
+
+### 1. YouTube Music search not working (Returns empty results)
+- **Fix**: Updated `music_service.dart` to parse `itemSectionRenderer` as the YouTube Music search API recently changed its structure and stopped wrapping results in `musicShelfRenderer`.
+- **Files changed**: `lib/services/music_service.dart`
+
+### 2. `ionicons` package breaks with Flutter 3.44+ (IconData is final)
 - **Fix**: Removed `ionicons` dependency, replaced with Material Icons (`Icons.shuffle`, `Icons.play_circle`, `Icons.ondemand_video`).
 - **Files changed**: `pubspec.yaml`, `player_control.dart`, `mini_player.dart`, `gesture_player.dart`, `songinfo_bottom_sheet.dart`
 

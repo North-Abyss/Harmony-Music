@@ -1,10 +1,11 @@
 <div align="center">
 
-# ❗**This repository is no longer maintained.**
+# 🚀 **This repository is the continued version of Harmony Music.**
+This app is a fork of the original Harmony Music app by **anandnet**, with additional features and improvements actively added and maintained by **North-Abyss**.
 
 </div>
 
-<img src="https://github.com/anandnet/Harmony-Music/blob/main/cover.png" width="1200" >
+<img src="https://github.com/North-Abyss/Harmony-Music/raw/main/images/cover.png" width="1200" >
 
 # Harmony Music
 A cross platform app for music streaming made with Flutter(Android, Windows, linux).
@@ -35,14 +36,7 @@ A cross platform app for music streaming made with Flutter(Android, Windows, lin
 # Download
 * Pleass choose one source for android apk. you won't be able to update from cross build apk source.
 
-<a href="https://github.com/anandnet/Harmony-Music/releases/latest"><img src ="https://github.com/anandnet/Harmony-Music/blob/main/don_github.png" width = "250"></a> <a href= "https://f-droid.org/packages/com.anandnet.harmonymusic"><img src = "https://github.com/anandnet/Harmony-Music/blob/main/down_fdroid.png" width = '250'></a></a> 
-
-# Translation
-<a href="https://hosted.weblate.org/engage/harmony-music/">
-<img src="https://hosted.weblate.org/widget/harmony-music/project-translations/multi-auto.svg" alt="Translation status" />
-</a>
-
-You can also help us in translation, click status image or <a href="https://hosted.weblate.org/projects/harmony-music/project-translations/"> here </a> to go to Weblate.
+<a href="https://github.com/North-Abyss/Harmony-Music/releases/latest"><img src ="https://github.com/North-Abyss/Harmony-Music/raw/main/images/don_github.png" width = "250"></a>
 
 # Troubleshoot
 * if you are facing Notification control issue or music playback stopped by system optimization, please enable ignore battery optimization option from settings
