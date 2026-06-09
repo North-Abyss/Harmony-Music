@@ -1,0 +1,169 @@
+name: Release Workflow
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    name: Build Android APKs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.24.2'
+          
+      - name: Generate Localization
+        run: dart localization/generator.dart
+        
+      - name: Set update check flag
+        run: echo "const updateCheckFlag = true;" > lib/utils/update_check_flag_file.dart
+        
+      - name: Get Dependencies
+        run: flutter pub get
+        
+      - name: Build Universal APK
+        run: flutter build apk --release
+        
+      - name: Build Architecture Specific APKs
+        run: flutter build apk --target-platform android-arm,android-arm64 --split-per-abi --release
+        
+      - uses: actions/upload-artifact@v3
+        with:
+          name: android-builds
+          path: build/app/outputs/flutter-apk/*.apk
+
+  build-linux:
+    name: Build Linux Packages
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev mpv libmpv-dev
+          
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.24.2'
+          
+      - name: Generate Localization
+        run: dart localization/generator.dart
+        
+      - name: Set update check flag
+        run: echo "const updateCheckFlag = true;" > lib/utils/update_check_flag_file.dart
+        
+      - name: Get Dependencies
+        run: flutter pub get
+        
+      - name: Package for Linux
+        run: |
+          dart pub global activate flutter_distributor
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          flutter_distributor package --platform linux --targets deb,rpm,appimage
+          
+      - uses: actions/upload-artifact@v3
+        with:
+          name: linux-builds
+          path: dist/*/*/*
+
+  build-windows:
+    name: Build Windows Exe
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install InnoSetup
+        run: choco install innosetup -y
+        
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.24.2'
+          
+      - name: Generate Localization
+        run: dart localization/generator.dart
+        
+      - name: Set update check flag
+        run: echo "const updateCheckFlag = true;" > lib/utils/update_check_flag_file.dart
+        
+      - name: Get Dependencies
+        run: flutter pub get
+        
+      - name: Build Windows Exe
+        run: |
+          dart pub global activate flutter_distributor
+          flutter_distributor package --platform windows --targets exe
+          
+      - uses: actions/upload-artifact@v3
+        with:
+          name: windows-builds
+          path: dist/*/*/*.exe
+
+  create-release:
+    name: Create GitHub Release
+    needs: [build-android, build-linux, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/download-artifact@v3
+      
+      - name: Organize and Rename Artifacts
+        run: |
+          mkdir release-assets
+          # Determine version from tag (e.g. refs/tags/v1.13.0 -> 1.13.0)
+          VERSION=${GITHUB_REF_NAME#v}
+          if [[ "$GITHUB_REF_NAME" != v* ]]; then
+            VERSION="latest"
+          fi
+          
+          # Copy all built files
+          find . -name "*.apk" -exec cp {} release-assets/ \;
+          find . -name "*.deb" -exec cp {} release-assets/ \;
+          find . -name "*.rpm" -exec cp {} release-assets/ \;
+          find . -name "*.AppImage" -exec cp {} release-assets/ \;
+          find . -name "*.exe" -exec cp {} release-assets/ \;
+          
+          cd release-assets
+          
+          # Rename Android APKs to match standard naming
+          if [ -f "app-armeabi-v7a-release.apk" ]; then
+            mv app-armeabi-v7a-release.apk harmonymusic-${VERSION}-armeabi-v7a-release.apk
+          fi
+          if [ -f "app-arm64-v8a-release.apk" ]; then
+            mv app-arm64-v8a-release.apk harmonymusic-${VERSION}-arm64-v8a-release.apk
+          fi
+          if [ -f "app-release.apk" ]; then
+            mv app-release.apk harmonymusic-${VERSION}.apk
+          fi
+          
+          # Rename flutter_distributor packages if they have generic names
+          for file in *; do
+            if [[ "$file" != harmonymusic* ]]; then
+              ext="${file##*.}"
+              mv "$file" "harmonymusic-${VERSION}.${ext}"
+            fi
+          done
+          
+          # Generate SHA256 sums
+          sha256sum * > harmonymusic-v${VERSION}.sha256sum
+          
+      - name: Publish Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release-assets/*
+          draft: true
+          generate_release_notes: true
