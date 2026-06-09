@@ -1,7 +1,7 @@
 <div align="center">
 
 # 🚀 **This repository is the continued version of Harmony Music.**
-This app is a fork of the original Harmony Music app by **anandnet**, with additional features and improvements actively added and maintained by **North-Abyss**.
+This app is a fork of the original [Harmony Music app by anandnet](https://github.com/anandnet/Harmony-Music), with additional features and improvements actively added and maintained by **North-Abyss**.
 
 </div>
 
@@ -41,6 +41,7 @@ graph TD
     GetX --> Audio[Audio Layer]
     GetX --> Network[Network Layer]
     GetX --> Storage[Local Storage]
+    GetX --> Hardware[Hardware Integration]
     
     Audio --> JustAudio[just_audio - Android]
     Audio --> MediaKit[media_kit - Desktop]
@@ -51,6 +52,10 @@ graph TD
     Network --> Piped[Piped API]
     
     Storage --> Hive[Hive Database - Cache/Bookmarks]
+    
+    Hardware --> Scanner[QR Code Scanner]
+    Scanner --> ZXing[flutter_zxing - Barcode Decoding]
+    Scanner --> Camera[camera & camera_linux - Vision]
 ```
 
 

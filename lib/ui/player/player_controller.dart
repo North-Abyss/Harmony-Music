@@ -25,7 +25,9 @@ import '../screens/Home/home_screen_controller.dart';
 import '../widgets/sliding_up_panel.dart';
 import '/models/durationstate.dart';
 import '/services/music_service.dart';
-
+import '../widgets/keyboard_shortcuts_menu.dart';
+import '../widgets/lyrics_dialog.dart';
+import 'components/lyrics_widget.dart';
 class PlayerController extends GetxController
     with GetSingleTickerProviderStateMixin {
   final _audioHandler = Get.find<AudioHandler>();
@@ -149,6 +151,7 @@ class PlayerController extends GetxController
   final FocusScopeNode sidePanelFocus = FocusScopeNode(debugLabel: 'sidePanel');
   final FocusScopeNode centerPanelFocus = FocusScopeNode(debugLabel: 'centerPanel');
   final FocusScopeNode playerFocus = FocusScopeNode(debugLabel: 'player');
+  final FocusScopeNode miniPlayerFocus = FocusScopeNode(debugLabel: 'miniPlayer');
   final FocusScopeNode searchFocus = FocusScopeNode(debugLabel: 'search');
 
   bool _handleKeyEvent(KeyEvent event) {
@@ -162,11 +165,22 @@ class PlayerController extends GetxController
           FocusManager.instance.primaryFocus?.unfocus();
           return true;
         }
-        return false;
+        if (event.logicalKey != LogicalKeyboardKey.tab) {
+          return false;
+        }
       }
 
       if (event.logicalKey == LogicalKeyboardKey.tab) {
-        playerFocus.requestFocus();
+        if (playerFocus.hasFocus || playerFocus.children.any((node) => node.hasFocus) ||
+            miniPlayerFocus.hasFocus || miniPlayerFocus.children.any((node) => node.hasFocus)) {
+          centerPanelFocus.requestFocus();
+        } else {
+          if (playerPanelController.isPanelOpen) {
+            playerFocus.requestFocus();
+          } else {
+            miniPlayerFocus.requestFocus();
+          }
+        }
         return true;
       }
 
@@ -180,7 +194,58 @@ class PlayerController extends GetxController
         return true;
       }
 
+      if (event.logicalKey == LogicalKeyboardKey.keyL) {
+        if (!playerPanelController.isPanelOpen) {
+          if (isDesktopLyricsDialogOpen) {
+            Get.back();
+            return true;
+          }
+          if (!showLyricsflag.value) {
+            showLyrics();
+          } else if (lyrics["synced"].isEmpty && lyrics['plainLyrics'].isEmpty) {
+            showLyricsflag.value = false;
+            showLyrics();
+          }
+          Get.dialog(const LyricsDialog()).whenComplete(() {
+            isDesktopLyricsDialogOpen = false;
+            showLyricsflag.value = false;
+          });
+          isDesktopLyricsDialogOpen = true;
+        } else {
+          showLyrics();
+        }
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.keyC) {
+        if (playerPanelController.isPanelOpen) {
+          playerFocus.requestFocus();
+        } else {
+          miniPlayerFocus.requestFocus();
+        }
+        return true;
+      }
+
+      if (event.logicalKey == LogicalKeyboardKey.keyF) {
+        if (playerPanelController.isPanelOpen) {
+          playerPanelController.close();
+        } else {
+          playerPanelController.open();
+        }
+        return true;
+      }
+
+      if (event.character == '?' || (event.logicalKey == LogicalKeyboardKey.slash && HardwareKeyboard.instance.isShiftPressed)) {
+        showKeyboardShortcutsDialog(homeScaffoldkey.currentState!.context);
+        return true;
+      }
+
       if (event.logicalKey == LogicalKeyboardKey.escape) {
+        // Let the native Flutter dialog handler take care of Escape key for dialogs
+        if (Get.isDialogOpen == true || Get.isBottomSheetOpen == true) {
+          return false; 
+        }
+        
         if (playerPanelController.isPanelOpen) {
           playerPanelController.close();
           return true;
@@ -192,16 +257,7 @@ class PlayerController extends GetxController
           return true;
         } 
         
-        if (Get.key.currentState?.canPop() ?? false) {
-          Get.back();
-          return true;
-        }
-
-        if (GetPlatform.isDesktop) {
-          exit(0);
-        } else {
-          SystemNavigator.pop();
-        }
+        // Prevent generic Escape from closing the app
         return true;
       }
       if (event.logicalKey == LogicalKeyboardKey.space || event.logicalKey == LogicalKeyboardKey.mediaPlayPause) {
@@ -216,13 +272,7 @@ class PlayerController extends GetxController
         prev();
         return true;
       }
-      if (event.logicalKey == LogicalKeyboardKey.keyL) {
-        if (playerPanelController.isPanelOpen) {
-          showLyrics();
-          return true;
-        }
-        return false;
-      }
+
       if (event.logicalKey == LogicalKeyboardKey.keyP) {
         if (GetPlatform.isDesktop) {
           if (homeScaffoldkey.currentState?.isEndDrawerOpen ?? false) {

@@ -12,6 +12,7 @@ import '../screens/Settings/settings_screen_controller.dart';
 import '/utils/helper.dart';
 import '/services/piped_service.dart';
 import '/ui/widgets/sleep_timer_bottom_sheet.dart';
+import '/ui/widgets/qr_code_dialog.dart';
 import '/ui/player/player_controller.dart';
 import '../screens/Library/library_controller.dart';
 import '/ui/widgets/add_to_playlist.dart';
@@ -309,11 +310,21 @@ class SongInfoBottomSheet extends StatelessWidget {
               contentPadding: const EdgeInsets.only(left: 15),
               visualDensity: const VisualDensity(vertical: -1),
               leading: const Icon(Icons.copy),
-              title: Text("Copy Link"),
+              title: const Text("Copy Link"),
               onTap: () {
                 Navigator.of(context).pop();
                 Clipboard.setData(ClipboardData(text: "https://youtube.com/watch?v=${song.id}"));
                 ScaffoldMessenger.of(context).showSnackBar(snackbar(context, "Link Copied!", size: SanckBarSize.MEDIUM));
+              },
+            ),
+            ListTile(
+              contentPadding: const EdgeInsets.only(left: 15),
+              visualDensity: const VisualDensity(vertical: -1),
+              leading: const Icon(Icons.qr_code),
+              title: const Text("QR Code"),
+              onTap: () {
+                Navigator.of(context).pop();
+                showQrCodeDialog(context, "https://youtube.com/watch?v=${song.id}", song.title);
               },
             ),
           ],

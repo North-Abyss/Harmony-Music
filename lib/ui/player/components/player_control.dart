@@ -126,9 +126,25 @@ class PlayerControlWidget extends StatelessWidget {
                                 .color!
                                 .withOpacity(0.2),
                       ))),
+              IconButton(
+                iconSize: 24,
+                onPressed: playerController.seekBackward,
+                icon: Icon(
+                  Icons.replay_10,
+                  color: Theme.of(context).textTheme.titleMedium!.color,
+                ),
+              ),
               _previousButton(playerController, context),
               const CircleAvatar(radius: 35, child: AnimatedPlayButton(key: Key("playButton"),)),
               _nextButton(playerController, context),
+              IconButton(
+                iconSize: 24,
+                onPressed: playerController.seekForward,
+                icon: Icon(
+                  Icons.forward_10,
+                  color: Theme.of(context).textTheme.titleMedium!.color,
+                ),
+              ),
               Obx(() {
                 return IconButton(
                     onPressed: playerController.toggleLoopMode,

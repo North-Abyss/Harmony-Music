@@ -33,10 +33,14 @@ class SearchScreenController extends GetxController with ProcessLink {
     historyQuerylist.value = queryBox.values.toList().reversed.toList();
   }
 
-  int historyIndex = -1;
+  final historyIndex = (-1).obs;
+  String? _savedSearchInput;
+
+  bool get isHistory => suggestionList.isEmpty && (_savedSearchInput ?? textInputController.text).isEmpty;
 
   Future<void> onChanged(String text) async {
-    historyIndex = -1;
+    _savedSearchInput = text;
+    historyIndex.value = -1;
     if(text.contains("https://")){
       urlPasted.value = true; 
       return;
@@ -45,28 +49,33 @@ class SearchScreenController extends GetxController with ProcessLink {
     suggestionList.value = await musicServices.getSearchSuggestion(text);
   }
 
-  void arrowUp() {
-    final list = suggestionList.isEmpty && textInputController.text.isEmpty ? historyQuerylist : suggestionList;
+  void arrowDown() {
+    final list = suggestionList.isEmpty ? historyQuerylist : suggestionList;
     if (list.isEmpty) return;
     
-    if (historyIndex < list.length - 1) {
-      historyIndex++;
-      textInputController.text = list[historyIndex];
+    if (historyIndex.value == -1) {
+      _savedSearchInput = textInputController.text;
+    }
+    
+    if (historyIndex.value < list.length - 1) {
+      historyIndex.value++;
+      textInputController.text = list[historyIndex.value];
       textInputController.selection = TextSelection.collapsed(offset: textInputController.text.length);
     }
   }
 
-  void arrowDown() {
-    final list = suggestionList.isEmpty && textInputController.text.isEmpty ? historyQuerylist : suggestionList;
+  void arrowUp() {
+    final list = suggestionList.isEmpty ? historyQuerylist : suggestionList;
     if (list.isEmpty) return;
 
-    if (historyIndex > 0) {
-      historyIndex--;
-      textInputController.text = list[historyIndex];
+    if (historyIndex.value > 0) {
+      historyIndex.value--;
+      textInputController.text = list[historyIndex.value];
       textInputController.selection = TextSelection.collapsed(offset: textInputController.text.length);
-    } else if (historyIndex == 0) {
-      historyIndex = -1;
-      textInputController.text = "";
+    } else if (historyIndex.value == 0) {
+      historyIndex.value = -1;
+      textInputController.text = _savedSearchInput ?? "";
+      textInputController.selection = TextSelection.collapsed(offset: textInputController.text.length);
     }
   }
 
@@ -94,9 +103,10 @@ class SearchScreenController extends GetxController with ProcessLink {
 
   void reset() {
     urlPasted.value = false;
+    _savedSearchInput = null;
     textInputController.text = "";
     suggestionList.clear();
-    historyIndex = -1;
+    historyIndex.value = -1;
   }
 
   Future<void> removeQueryFromHistory(String txt) async {

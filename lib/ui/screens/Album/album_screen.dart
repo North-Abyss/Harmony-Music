@@ -15,6 +15,7 @@ import '../../widgets/loader.dart';
 import '../../widgets/snackbar.dart';
 import '../../widgets/song_list_tile.dart';
 import '../../widgets/songinfo_bottom_sheet.dart';
+import '../../widgets/qr_code_dialog.dart';
 import '../../widgets/sort_widget.dart';
 import 'album_screen_controller.dart';
 
@@ -388,6 +389,18 @@ class AlbumScreen extends StatelessWidget {
                                             },
                                             icon: const Icon(
                                               Icons.copy,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          IconButton(
+                                            tooltip: "QR Code",
+                                            visualDensity: const VisualDensity(vertical: -3),
+                                            splashRadius: 10,
+                                            onPressed: () {
+                                              showQrCodeDialog(context, "https://youtube.com/playlist?list=${albumController.album.value.audioPlaylistId}", albumController.album.value.title);
+                                            },
+                                            icon: const Icon(
+                                              Icons.qr_code,
                                               size: 20,
                                             ),
                                           ),

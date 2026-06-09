@@ -55,12 +55,20 @@ class SearchScreen extends StatelessWidget {
                 padding: EdgeInsets.only(top: topPadding, left: 5),
                 child: Column(
                   children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "search".tr,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "search".tr,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            Get.toNamed(ScreenNavigationSetup.qrScannerScreen, id: ScreenNavigationSetup.id);
+                          },
+                          icon: const Icon(Icons.qr_code_scanner),
+                        ),
+                      ],
                     ),
                     const SizedBox(
                       height: 10,
@@ -98,10 +106,7 @@ class SearchScreen extends StatelessWidget {
                     ),
                     Expanded(
                       child: Obx(() {
-                        final isEmpty = searchScreenController
-                                .suggestionList.isEmpty ||
-                            searchScreenController.textInputController.text ==
-                                "";
+                        final isEmpty = searchScreenController.isHistory;
                         final list = isEmpty
                             ? searchScreenController.historyQuerylist.toList()
                             : searchScreenController.suggestionList.toList();
@@ -135,9 +140,9 @@ class SearchScreen extends StatelessWidget {
                                       ),
                                     )
                                   ]
-                                : list
-                                    .map((item) => SearchItem(
-                                        queryString: item,
+                                : list.asMap().entries.map((entry) => SearchItem(
+                                        index: entry.key,
+                                        queryString: entry.value,
                                         isHistoryString: isEmpty))
                                     .toList());
                       }),

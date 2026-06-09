@@ -66,9 +66,11 @@ class QuickPicksWidget extends StatelessWidget {
                               () => Get.delete<SongInfoController>());
                         }
                       },
-                      child: ListTile(
-                          contentPadding: const EdgeInsets.only(left: 5),
-                          leading: ImageWidget(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: ListTile(
+                            contentPadding: const EdgeInsets.only(left: 5),
+                            leading: ImageWidget(
                             song: content.songList[item],
                             size: 55,
                           ),
@@ -127,6 +129,7 @@ class QuickPicksWidget extends StatelessWidget {
                                   },
                                   icon: const Icon(Icons.more_vert))
                               : null),
+                      ),
                     );
                   }),
             ),

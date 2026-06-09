@@ -29,7 +29,9 @@ class MiniPlayer extends StatelessWidget {
         child: AnimatedOpacity(
           opacity: playerController.playerPaneOpacity.value,
           duration: Duration.zero,
-          child: Container(
+          child: FocusScope(
+            node: playerController.miniPlayerFocus,
+            child: Container(
             height: playerController.playerPanelMinHeight.value,
             width: size.width,
             color: Theme.of(context).bottomSheetTheme.backgroundColor,
@@ -306,10 +308,7 @@ class MiniPlayer extends StatelessWidget {
                                         iconSize: 20,
                                         onPressed: () {
                                           playerController.showLyrics();
-                                          showDialog(
-                                                  builder: (context) =>
-                                                      const LyricsDialog(),
-                                                  context: context)
+                                          Get.dialog(const LyricsDialog())
                                               .whenComplete(() {
                                             playerController
                                                     .isDesktopLyricsDialogOpen =
@@ -505,6 +504,7 @@ class MiniPlayer extends StatelessWidget {
               ),
             ),
           ),
+        ),
         ),
       );
     });

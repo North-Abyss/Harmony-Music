@@ -8,7 +8,7 @@ This document acts as the primary Agent Database and Context Memory for AI agent
 ## Project Context
 - **Name**: Harmony Music
 - **Package Name**: `harmonymusic`
-- **Version**: 1.12.2+27
+- **Version**: 1.13.0
 - **Forked From**: [anandnet/Harmony-Music](https://github.com/anandnet/Harmony-Music)
 - **Maintained By**: [North-Abyss/Harmony-Music](https://github.com/North-Abyss/Harmony-Music)
 - **Goal**: Develop and actively maintain the Harmony Music cross-platform music streaming app, adding new features and fixing legacy bugs.
@@ -29,8 +29,33 @@ This document acts as the primary Agent Database and Context Memory for AI agent
 - `lib/models/`: Data models (MediaItem, Playlist)
 - `lib/utils/`: Helpers, theme controllers, localization, and formatters
 
+### Architecture Overview
+
+```mermaid
+graph TD
+    A[UI Layer / Screens] --> B[State Management / GetX Controllers]
+    B --> C[Core Services / MusicServices]
+    B --> H[Hardware Services]
+    C --> D[Audio Engine / media_kit & just_audio]
+    C --> E[Local Storage / Hive Database]
+    C --> F[Network APIs / YouTube Extractor]
+    H --> S[QR Scanning / flutter_zxing]
+    H --> Cam[Camera Access / camera_linux]
+    
+    subgraph UI Components
+      A1[Home Screen]
+      A2[Search Screen]
+      A3[Player Panel]
+      A4[Dialogs & BottomSheets]
+      A5[QR Scanner Screen]
+    end
+    
+    A1 & A2 & A3 & A4 & A5 --> A
+```
+
 ## Architectural & Design Decisions
 - **State management**: GetX (`get` package) - Use GetX controllers for managing UI state.
+- **Keyboard Navigation**: Uses specific KeyDownEvent intercepts instead of global focus traversal loops to prevent trapping users. Tab cycles panels; `?` opens a styled shortcut menu.
 - **Local storage**: Hive (`hive` / `hive_flutter`) - Used for offline caching and favorites.
 - **Audio playback**: `just_audio` (Android) + `media_kit` (Linux/Windows) + `audio_service` (Background playback).
 - **Networking**: `dio` for HTTP requests, `youtube_explode_dart` for some YouTube data extraction (Note: Custom scraping is also heavily used in `MusicServices`).

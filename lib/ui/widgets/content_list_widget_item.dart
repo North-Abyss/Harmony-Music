@@ -4,34 +4,53 @@ import 'package:get/get.dart';
 import '../navigator.dart';
 import 'image_widget.dart';
 
-class ContentListItem extends StatelessWidget {
+class ContentListItem extends StatefulWidget {
   const ContentListItem(
       {super.key, required this.content, this.isLibraryItem = false});
 
-  ///content will be of Type class Album or Playlist
   final dynamic content;
   final bool isLibraryItem;
 
   @override
+  State<ContentListItem> createState() => _ContentListItemState();
+}
+
+class _ContentListItemState extends State<ContentListItem> {
+  bool _hasFocus = false;
+
+  @override
   Widget build(BuildContext context) {
+    final content = widget.content;
+    final isLibraryItem = widget.isLibraryItem;
     final isAlbum = content.runtimeType.toString() == "Album";
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
+      onFocusChange: (focused) {
+        setState(() {
+          _hasFocus = focused;
+        });
+      },
       onTap: () {
         if (isAlbum) {
           Get.toNamed(ScreenNavigationSetup.albumScreen,
-              id: ScreenNavigationSetup.id, arguments:(content, content.browseId));
+              id: ScreenNavigationSetup.id, arguments:(widget.content, widget.content.browseId));
           return;
         }
         Get.toNamed(ScreenNavigationSetup.playlistScreen,
             id: ScreenNavigationSetup.id,
-            arguments: [content, content.playlistId]);
+            arguments: [widget.content, widget.content.playlistId]);
       },
       child: Container(
         width: 130,
-        height: 180,
+        height: 200,
         padding: const EdgeInsets.symmetric(horizontal: 5),
+        decoration: BoxDecoration(
+          border: _hasFocus
+              ? Border.all(color: Theme.of(context).primaryColor, width: 2)
+              : Border.all(color: Colors.transparent, width: 2),
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

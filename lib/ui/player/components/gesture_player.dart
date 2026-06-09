@@ -150,31 +150,68 @@ class GesturePlayer extends StatelessWidget {
                                 ]),
                           ),
                           SizedBox(
-                            width: 75,
+                            width: 130,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                IconButton(
-                                    splashRadius: 10,
-                                    iconSize: 20,
-                                    visualDensity: const VisualDensity(
-                                        horizontal: -4, vertical: -4),
-                                    onPressed: playerController.toggleFavourite,
-                                    icon: Obx(() => Icon(
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    IconButton(
+                                        splashRadius: 10,
+                                        iconSize: 20,
+                                        visualDensity: const VisualDensity(
+                                            horizontal: -4, vertical: -4),
+                                        onPressed: () {
+                                          playerController.showLyrics();
                                           playerController
-                                                  .isCurrentSongFav.isFalse
-                                              ? Icons.favorite_border
-                                              : Icons.favorite,
+                                              .homeScaffoldkey.currentState!
+                                              .openEndDrawer();
+                                        },
+                                        icon: Icon(
+                                          Icons.lyrics_outlined,
                                           color: Theme.of(context)
                                               .textTheme
                                               .titleMedium!
                                               .color,
-                                        ))),
+                                        )),
+                                    IconButton(
+                                        splashRadius: 10,
+                                        iconSize: 20,
+                                        visualDensity: const VisualDensity(
+                                            horizontal: -4, vertical: -4),
+                                        onPressed: playerController.toggleFavourite,
+                                        icon: Obx(() => Icon(
+                                              playerController
+                                                      .isCurrentSongFav.isFalse
+                                                  ? Icons.favorite_border
+                                                  : Icons.favorite,
+                                              color: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium!
+                                                  .color,
+                                            ))),
+                                  ],
+                                ),
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
+                                    IconButton(
+                                      iconSize: 18,
+                                      splashRadius: 10,
+                                      visualDensity: const VisualDensity(
+                                          horizontal: -4, vertical: -4),
+                                      onPressed: playerController.seekBackward,
+                                      icon: Icon(
+                                        Icons.replay_10,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge!
+                                            .color,
+                                      ),
+                                    ),
                                     Obx(() {
                                       return IconButton(
                                           splashRadius: 10,
@@ -220,6 +257,20 @@ class GesturePlayer extends StatelessWidget {
                                                   .color!
                                                   .withOpacity(0.2),
                                         ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      iconSize: 18,
+                                      splashRadius: 10,
+                                      visualDensity: const VisualDensity(
+                                          horizontal: -4, vertical: -4),
+                                      onPressed: playerController.seekForward,
+                                      icon: Icon(
+                                        Icons.forward_10,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge!
+                                            .color,
                                       ),
                                     ),
                                   ],

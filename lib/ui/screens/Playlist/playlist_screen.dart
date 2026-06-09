@@ -18,6 +18,7 @@ import '../../widgets/playlist_export_dialog.dart';
 import '../../widgets/snackbar.dart';
 import '../../widgets/song_list_tile.dart';
 import '../../widgets/songinfo_bottom_sheet.dart';
+import '../../widgets/qr_code_dialog.dart';
 import '../../widgets/sort_widget.dart';
 import '../Library/library_controller.dart';
 import 'playlist_screen_controller.dart';
@@ -528,6 +529,38 @@ class PlaylistScreen extends StatelessWidget {
                                                 size: 20,
                                               ),
                                             ),
+                                            if (playlistController
+                                                .playlist.value.isCloudPlaylist)
+                                              IconButton(
+                                                tooltip: "QR Code",
+                                                visualDensity: const VisualDensity(
+                                                  vertical: -3,
+                                                ),
+                                                splashRadius: 10,
+                                                onPressed: () {
+                                                  final content = playlistController
+                                                      .playlist.value;
+                                                  String url = "https://youtube.com/playlist?list=";
+                                                  if (content.isPipedPlaylist) {
+                                                    url = "https://piped.video/playlist?list=${content.playlistId}";
+                                                  } else {
+                                                    final isPlaylistIdPrefixAvlbl =
+                                                        content.playlistId
+                                                                .substring(0, 2) ==
+                                                            "VL";
+                                                    url = isPlaylistIdPrefixAvlbl
+                                                        ? url +
+                                                            content.playlistId
+                                                                .substring(2)
+                                                        : url + content.playlistId;
+                                                  }
+                                                  showQrCodeDialog(context, url, content.title);
+                                                },
+                                                icon: const Icon(
+                                                  Icons.qr_code,
+                                                  size: 20,
+                                                ),
+                                              ),
                                           // Export button - opens export dialog
                                           IconButton(
                                             onPressed: () {

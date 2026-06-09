@@ -7,15 +7,24 @@ import '../../../navigator.dart';
 class SearchItem extends StatelessWidget {
   final String queryString;
   final bool isHistoryString;
+  final int index;
   const SearchItem(
-      {super.key, required this.queryString, required this.isHistoryString});
+      {super.key, required this.queryString, required this.isHistoryString, required this.index});
 
   @override
   Widget build(BuildContext context) {
     final searchScreenController = Get.find<SearchScreenController>();
-    return ListTile(
-      contentPadding: const EdgeInsets.only(left: 10, right: 20),
-      onTap: () {
+    return Obx(() {
+      final isSelected = searchScreenController.historyIndex.value == index;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+        child: ListTile(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          selected: isSelected,
+          selectedTileColor: Theme.of(context).focusColor,
+          selectedColor: Theme.of(context).colorScheme.onSurface,
+          contentPadding: const EdgeInsets.only(left: 10, right: 20),
+        onTap: () {
         Get.toNamed(ScreenNavigationSetup.searchResultScreen,
             id: ScreenNavigationSetup.id, arguments: queryString);
         searchScreenController.addToHistryQueryList(queryString);
@@ -66,6 +75,7 @@ class SearchItem extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
+    });
   }
 }

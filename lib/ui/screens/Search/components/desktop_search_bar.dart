@@ -20,8 +20,22 @@ class DesktopSearchBar extends StatelessWidget {
             LogicalKeySet(LogicalKeyboardKey.space):
                 const DoNothingAndStopPropagationTextIntent()
           },
-          child: SearchBar(
-            controller: searchScreenController.textInputController,
+          child: Focus(
+            onKeyEvent: (node, event) {
+              if (event is KeyDownEvent || event is KeyRepeatEvent) {
+                if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                  searchScreenController.arrowUp();
+                  return KeyEventResult.handled;
+                }
+                if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                  searchScreenController.arrowDown();
+                  return KeyEventResult.handled;
+                }
+              }
+              return KeyEventResult.ignored;
+            },
+            child: SearchBar(
+              controller: searchScreenController.textInputController,
             onTapOutside: (event) {},
             onChanged: searchScreenController.onChanged,
             onSubmitted: (val) {
@@ -52,25 +66,32 @@ class DesktopSearchBar extends StatelessWidget {
             trailing: [
               Obx(() => searchScreenController.isSearchBarInFocus.isTrue
                   ? IconButton(
-                      onPressed: searchScreenController.reset,
+                      onPressed: () {
+                        searchScreenController.reset();
+                        searchScreenController.focusNode.unfocus();
+                      },
                       icon: const Icon(Icons.clear))
-                  : const SizedBox.shrink())
+                  : IconButton(
+                      onPressed: () {
+                        Get.toNamed(ScreenNavigationSetup.qrScannerScreen, id: ScreenNavigationSetup.id);
+                      },
+                      icon: const Icon(Icons.qr_code_scanner)))
             ],
             padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(
                 EdgeInsets.only(left: 15, right: 15)),
+            ),
           ),
         ),
         Padding(
             padding: const EdgeInsets.only(top: 10.0),
-            child: Container(
-              decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondary,
-                  borderRadius: BorderRadius.circular(20)),
-              constraints: const BoxConstraints(minHeight: 0, maxHeight: 300),
-              child: Obx(() {
-                final isHistoryString =
-                    searchScreenController.textInputController.text.isEmpty &&
-                        searchScreenController.suggestionList.isEmpty;
+            child: Material(
+              color: Theme.of(context).colorScheme.secondary,
+              borderRadius: BorderRadius.circular(20),
+              clipBehavior: Clip.antiAlias,
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 0, maxHeight: 300),
+                child: Obx(() {
+                final isHistoryString = searchScreenController.isHistory;
                 final listToShow = isHistoryString
                     ? searchScreenController.historyQuerylist
                     : searchScreenController.suggestionList;
@@ -96,14 +117,16 @@ class DesktopSearchBar extends StatelessWidget {
                         ? ListView(
                             shrinkWrap: true,
                             padding: const EdgeInsets.all(5.0),
-                            children: listToShow.map((item) {
+                            children: listToShow.asMap().entries.map<Widget>((entry) {
                               return SearchItem(
-                                  queryString: item,
+                                  index: entry.key,
+                                  queryString: entry.value,
                                   isHistoryString: isHistoryString);
                             }).toList())
                         : const SizedBox.shrink();
               }),
             ))
+          ),
       ],
     );
   }
