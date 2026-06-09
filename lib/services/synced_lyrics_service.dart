@@ -5,10 +5,10 @@ import 'package:hive/hive.dart';
 
 class SyncedLyricsService {
   static Future<Map<String, dynamic>?> getSyncedLyrics(
-      MediaItem song, int durInSec) async {
+      MediaItem song, int durInSec, {bool forceReload = false}) async {
     final lyricsBox = await Hive.openBox("lyrics");
     // check if lyrics available in local database
-    if (lyricsBox.containsKey(song.id)) {
+    if (!forceReload && lyricsBox.containsKey(song.id)) {
       return Map<String, dynamic>.from(await lyricsBox.get(song.id));
     }
 

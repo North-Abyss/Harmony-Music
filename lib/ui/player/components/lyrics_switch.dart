@@ -15,21 +15,39 @@ class LyricsSwitch extends StatelessWidget {
       () => playerController.showLyricsflag.value
           ? Padding(
               padding: const EdgeInsets.only(bottom: 10.0),
-              child: ToggleSwitch(
-                minWidth: 90.0,
-                cornerRadius: 20.0,
-                activeBgColors: [
-                  [Theme.of(context).primaryColor.withLightness(0.4)],
-                  [Theme.of(context).primaryColor.withLightness(0.4)]
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ToggleSwitch(
+                    minWidth: 90.0,
+                    cornerRadius: 20.0,
+                    activeBgColors: [
+                      [Theme.of(context).primaryColor.withLightness(0.4)],
+                      [Theme.of(context).primaryColor.withLightness(0.4)]
+                    ],
+                    activeFgColor: Colors.white,
+                    inactiveBgColor: Theme.of(context).colorScheme.secondary,
+                    inactiveFgColor: Colors.white,
+                    initialLabelIndex: playerController.lyricsMode.value,
+                    totalSwitches: 2,
+                    labels: ['synced'.tr, 'plain'.tr],
+                    radiusStyle: true,
+                    onToggle: playerController.changeLyricsMode,
+                  ),
+                  const SizedBox(width: 10),
+                  IconButton(
+                    onPressed: () => playerController.reloadLyrics(),
+                    icon: const Icon(Icons.refresh),
+                    color: Colors.white,
+                    tooltip: "Reload Lyrics",
+                  ),
+                  IconButton(
+                    onPressed: () => playerController.translateLyrics(),
+                    icon: const Icon(Icons.translate),
+                    color: Colors.white,
+                    tooltip: "Translate to English",
+                  ),
                 ],
-                activeFgColor: Colors.white,
-                inactiveBgColor: Theme.of(context).colorScheme.secondary,
-                inactiveFgColor: Colors.white,
-                initialLabelIndex: playerController.lyricsMode.value,
-                totalSwitches: 2,
-                labels: ['synced'.tr, 'plain'.tr],
-                radiusStyle: true,
-                onToggle: playerController.changeLyricsMode,
               ),
             )
           : const SizedBox.shrink(),

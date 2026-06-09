@@ -4,15 +4,11 @@ This file tracks ongoing issues, feature requests, and bug reports for faster cl
 
 ---
 
+
+
 ## 🐛 Bugs
 
-### 1. Lyrics Reload button does not work
-- **Priority**: High
-- **Status**: Open
-- **Description**: Lyrics Reload button needed if the lyrics fail to load and happens lot.
-- **Notes**: "There is no lyrics reload button on the lyrics screen. It should reload the lyrics when clicked." 
-
-### 2. Build fails on Chrome (web target)
+### 1. Build fails on Chrome (web target)
 - **Priority**: Medium
 - **Status**: Open (Known Limitation)
 - **Description**: `flutter run -d chrome` fails due to multiple packages using `dart:ffi` which is unavailable on the web platform.
@@ -21,23 +17,19 @@ This file tracks ongoing issues, feature requests, and bug reports for faster cl
 
 ---
 
-## ✨ Feature Requests
-
-### 1. Keyboard shortcuts for all controls
-- **Priority**: Medium
-- **Status**: Open
-- **Description**: Add keyboard shortcuts for all playback controls (play/pause, next, previous, volume, seek, etc.) to improve desktop usability.
-- **Notes**: Relevant for Linux, Windows, macOS, and Web platforms.
-
-### 2. Lyrics english Translate to english option
-- **Priority**: Medium
-- **Status**: Open
-- **Description**: Lyrics to be in english translation by using opensource lyrics sights or something.
-- **Notes**: "There is no lyrics translate to english option on the lyrics screen. It should translate the lyrics to english when clicked."
-
----
-
 ## ✅ Resolved
+
+### 1. Lyrics Reload button does not work
+- **Fix**: Added a `reloadLyrics()` method in `PlayerController` to bypass local Hive cache and fetch synced lyrics forcefully via LRCLib, with a dedicated reload button in `LyricsSwitch`.
+- **Files changed**: `player_controller.dart`, `synced_lyrics_service.dart`, `lyrics_switch.dart`
+
+### 2. Lyrics translate to english option
+- **Fix**: Added `translateLyrics()` in `PlayerController` using the Google Translate API, and mapped it to a new Translate button on the lyrics screen.
+- **Files changed**: `player_controller.dart`, `lyrics_switch.dart`
+
+### 3. Keyboard shortcuts for all controls
+- **Fix**: Wrapped the Home Scaffold in `CallbackShortcuts` and linked Space, Arrow keys, and Media keys to their respective player controls (play/pause, volume up/down, seek forward/back).
+- **Files changed**: `home.dart`, `player_controller.dart`
 
 ### 1. Update setting app info to both the og repo and say this repo as new continuer and update readme
 - **Fix**: Updated `README.md` and `lib/ui/screens/Settings/settings_screen.dart` to clearly state that this is a continued fork maintained by North-Abyss, while keeping credits to the original developer anandnet.

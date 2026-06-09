@@ -645,6 +645,28 @@ class PlayerController extends GetxController
     await Hive.box("AppPrefs").put("volume", value);
   }
 
+  void volumeUp() {
+    int v = volume.value + 5;
+    if (v > 100) v = 100;
+    setVolume(v);
+  }
+
+  void volumeDown() {
+    int v = volume.value - 5;
+    if (v < 0) v = 0;
+    setVolume(v);
+  }
+
+  void seekForward() {
+    final newPosition = progressBarStatus.value.current + const Duration(seconds: 5);
+    seek(newPosition > progressBarStatus.value.total ? progressBarStatus.value.total : newPosition);
+  }
+
+  void seekBackward() {
+    final newPosition = progressBarStatus.value.current - const Duration(seconds: 5);
+    seek(newPosition.isNegative ? Duration.zero : newPosition);
+  }
+
   Future<void> mute() async {
     int? vol;
     if (volume.value != 0) {
@@ -758,6 +780,61 @@ class PlayerController extends GetxController
       }
       isLyricsLoading.value = false;
     }
+  }
+
+  Future<void> reloadLyrics() async {
+    isLyricsLoading.value = true;
+    try {
+      final Map<String, dynamic>? lyricsR =
+          await SyncedLyricsService.getSyncedLyrics(
+              currentSong.value!, progressBarStatus.value.total.inSeconds, forceReload: true);
+      if (lyricsR != null) {
+        lyrics.value = lyricsR;
+        isLyricsLoading.value = false;
+        return;
+      }
+      final related = await _musicServices.getWatchPlaylist(
+          videoId: currentSong.value!.id, onlyRelated: true);
+      final relatedLyricsId = related['lyrics'];
+      if (relatedLyricsId != null) {
+        final lyrics_ = await _musicServices.getLyrics(relatedLyricsId);
+        lyrics.value = {"synced": "", "plainLyrics": lyrics_};
+      } else {
+        lyrics.value = {"synced": "", "plainLyrics": "NA"};
+      }
+    } catch (e) {
+      lyrics.value = {"synced": "", "plainLyrics": "NA"};
+    }
+    isLyricsLoading.value = false;
+  }
+
+  Future<void> translateLyrics() async {
+    isLyricsLoading.value = true;
+    try {
+      String plain = lyrics["plainLyrics"] ?? "";
+      // If we only have synced lyrics, extract plain lyrics to translate
+      if ((plain.isEmpty || plain == "NA") && lyrics["synced"] != null && lyrics["synced"].toString().isNotEmpty) {
+        plain = lyrics["synced"].toString().replaceAll(RegExp(r'\[\d+:\d+\.\d+\]'), '');
+      }
+      if (plain.isNotEmpty && plain != "NA") {
+        final res = await Dio().get(
+            'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${Uri.encodeComponent(plain)}');
+        if (res.data != null && res.data.isNotEmpty) {
+          String translated = "";
+          for (var item in res.data[0]) {
+            translated += item[0];
+          }
+          lyrics.value = {
+            "synced": "", // clear synced as translation ruins timestamps
+            "plainLyrics": translated
+          };
+          lyricsMode.value = 1; // force plain view
+        }
+      }
+    } catch (e) {
+      printERROR(e);
+    }
+    isLyricsLoading.value = false;
   }
 
   void changeLyricsMode(int? val) {

@@ -64,7 +64,14 @@ class Home extends StatelessWidget {
       },
       child: CallbackShortcuts(
         bindings: {
-          LogicalKeySet(LogicalKeyboardKey.space): playerController.playPause
+          LogicalKeySet(LogicalKeyboardKey.space): playerController.playPause,
+          LogicalKeySet(LogicalKeyboardKey.mediaPlayPause): playerController.playPause,
+          LogicalKeySet(LogicalKeyboardKey.mediaNextTrack): playerController.next,
+          LogicalKeySet(LogicalKeyboardKey.mediaPreviousTrack): playerController.prev,
+          LogicalKeySet(LogicalKeyboardKey.arrowRight): playerController.seekForward,
+          LogicalKeySet(LogicalKeyboardKey.arrowLeft): playerController.seekBackward,
+          LogicalKeySet(LogicalKeyboardKey.arrowUp): playerController.volumeUp,
+          LogicalKeySet(LogicalKeyboardKey.arrowDown): playerController.volumeDown,
         },
         child: Obx(
           () => Scaffold(

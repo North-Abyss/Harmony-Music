@@ -12,6 +12,9 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+# Commit Message 
+commit_message="Auto Update : Fixes"
+
 echo -e "${BLUE}Starting Harmony Music git sync...${NC}"
 
 # Stage all changes
@@ -20,7 +23,8 @@ git add .
 
 # Commit changes
 echo -e "${BLUE}Committing changes...${NC}"
-read -p "Enter commit message: " commit_message
+read -p "Enter commit message [Auto Update : Fixes]: " input_msg
+commit_message=${input_msg:-"Auto Update : Fixes"}
 git commit -m "$commit_message" || echo "No changes to commit"
 
 # Fetch latest changes from remote (this also fetches the latest tags)
