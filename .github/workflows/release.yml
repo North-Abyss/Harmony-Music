@@ -14,8 +14,8 @@ jobs:
     name: Build Android APKs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -39,7 +39,7 @@ jobs:
       - name: Build Architecture Specific APKs
         run: flutter build apk --target-platform android-arm,android-arm64 --split-per-abi --release
         
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: android-builds
           path: build/app/outputs/flutter-apk/*.apk
@@ -48,7 +48,7 @@ jobs:
     name: Build Linux Packages
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Install native dependencies
         run: |
@@ -75,7 +75,7 @@ jobs:
           export PATH="$PATH":"$HOME/.pub-cache/bin"
           flutter_distributor package --platform linux --targets deb,rpm,appimage
           
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: linux-builds
           path: dist/*/*/*
@@ -84,7 +84,7 @@ jobs:
     name: Build Windows Exe
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Install InnoSetup
         run: choco install innosetup -y
@@ -108,7 +108,7 @@ jobs:
           dart pub global activate flutter_distributor
           flutter_distributor package --platform windows --targets exe
           
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: windows-builds
           path: dist/*/*/*.exe
@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
       
       - name: Organize and Rename Artifacts
         run: |
