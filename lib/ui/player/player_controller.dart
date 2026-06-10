@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_lyric/lyric_ui/ui_netease.dart';
 import 'package:hive/hive.dart';
-import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import '../navigator.dart';
 import 'package:flutter/services.dart';
@@ -27,7 +26,6 @@ import '/models/durationstate.dart';
 import '/services/music_service.dart';
 import '../widgets/keyboard_shortcuts_menu.dart';
 import '../widgets/lyrics_dialog.dart';
-import 'components/lyrics_widget.dart';
 class PlayerController extends GetxController
     with GetSingleTickerProviderStateMixin {
   final _audioHandler = Get.find<AudioHandler>();

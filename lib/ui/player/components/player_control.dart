@@ -124,7 +124,7 @@ class PlayerControlWidget extends StatelessWidget {
                                 .textTheme
                                 .titleLarge!
                                 .color!
-                                .withOpacity(0.2),
+                                .withValues(alpha: 0.2),
                       ))),
               IconButton(
                 iconSize: 24,
@@ -156,7 +156,7 @@ class PlayerControlWidget extends StatelessWidget {
                               .textTheme
                               .titleLarge!
                               .color!
-                              .withOpacity(0.2),
+                              .withValues(alpha: 0.2),
                     ));
               }),
             ],
@@ -189,7 +189,7 @@ Widget _nextButton(PlayerController playerController, BuildContext context) {
         icon: Icon(
           Icons.skip_next,
           color: isLastSong
-              ? Theme.of(context).textTheme.titleLarge!.color!.withOpacity(0.2)
+              ? Theme.of(context).textTheme.titleLarge!.color!.withValues(alpha: 0.2)
               : Theme.of(context).textTheme.titleMedium!.color,
         ),
         iconSize: 30,

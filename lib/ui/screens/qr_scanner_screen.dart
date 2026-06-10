@@ -3,7 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_zxing/flutter_zxing.dart' as zxing;
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
+
 import 'Search/search_screen_controller.dart';
 
 class QrScannerScreen extends StatefulWidget {

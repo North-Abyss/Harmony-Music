@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter/services.dart';
+
 import 'package:widget_marquee/widget_marquee.dart';
 
 import '/models/playling_from.dart';
