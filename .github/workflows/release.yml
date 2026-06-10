@@ -74,6 +74,11 @@ jobs:
         
       - name: Build and Package for Linux
         run: |
+          dart pub global activate flutter_distributor
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          
+          flutter_distributor release --name dev --jobs release-dev-linux-deb,release-dev-linux-rpm
+          
           flutter build linux --release
           mkdir -p dist
           RELEASE_DIR=$(find build/linux -type d -name "bundle" | grep -i "release" | head -n 1)
@@ -83,6 +88,10 @@ jobs:
           fi
           cd "$RELEASE_DIR"
           tar -czf "$GITHUB_WORKSPACE/dist/harmonymusic-linux.tar.gz" *
+          
+          cd "$GITHUB_WORKSPACE"
+          cp dist/*/linux-*/*.deb dist/ || true
+          cp dist/*/linux-*/*.rpm dist/ || true
           
       - uses: actions/upload-artifact@v4
         with:
@@ -117,11 +126,11 @@ jobs:
           flutter build windows --release
           if ($LASTEXITCODE -ne 0) { throw "Flutter build failed with exit code $LASTEXITCODE" }
           mkdir dist
-          $releaseDir = Get-ChildItem -Path build\windows -Directory -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Release' } | Select-Object -First 1
-          if ($releaseDir) {
-            Compress-Archive -Path "$($releaseDir.FullName)\*" -DestinationPath dist\harmonymusic-windows.zip
+          $releaseDir = "build\windows\x64\runner\Release"
+          if (Test-Path $releaseDir) {
+            Compress-Archive -Path "$releaseDir\*" -DestinationPath dist\harmonymusic-windows.zip
           } else {
-            throw "Release directory not found in build\windows"
+            throw "Release directory not found at $releaseDir"
           }
           
       - uses: actions/upload-artifact@v4
@@ -152,6 +161,8 @@ jobs:
           find . -name "*.apk" -exec cp {} release-assets/ \;
           find . -name "*.tar.gz" -exec cp {} release-assets/ \;
           find . -name "*.zip" -exec cp {} release-assets/ \;
+          find . -name "*.deb" -exec cp {} release-assets/ \;
+          find . -name "*.rpm" -exec cp {} release-assets/ \;
           
           cd release-assets
           
@@ -172,6 +183,16 @@ jobs:
           
           if [ -f "harmonymusic-windows.zip" ]; then
             mv "harmonymusic-windows.zip" "harmonymusic-${VERSION}-windows.zip"
+          fi
+          
+          DEB_FILE=$(ls *.deb 2>/dev/null | head -n 1)
+          if [ -n "$DEB_FILE" ]; then
+            mv "$DEB_FILE" "harmonymusic-${VERSION}-linux.deb"
+          fi
+          
+          RPM_FILE=$(ls *.rpm 2>/dev/null | head -n 1)
+          if [ -n "$RPM_FILE" ]; then
+            mv "$RPM_FILE" "harmonymusic-${VERSION}-linux.rpm"
           fi
           
           # Generate SHA256 sums

@@ -24,7 +24,7 @@ This file tracks ongoing issues, feature requests, and bug reports for faster cl
 ## ✅ Resolved
 
 ### 🚀 New Features
-23. **QR Code Sharing and Scanning**: Added a new "QR Code" option to share sheets for songs, albums, and playlists. Integrated `qr_flutter` to dynamically generate QR codes. Added a dedicated `QrScannerScreen` using `mobile_scanner`, accessible directly from both the Desktop and Mobile Search Bars, allowing users to scan any YouTube or Harmony Music QR code to instantly open the corresponding media.
+23. **QR Code Sharing and Scanning**: Added a new "QR Code" option to share sheets for songs, albums, and playlists. Integrated `qr_flutter` to dynamically generate QR codes. Added a dedicated `QrScannerScreen` using `flutter_zxing`, accessible directly from both the Desktop and Mobile Search Bars, allowing users to scan any YouTube or Harmony Music QR code to instantly open the corresponding media.
 
 ### 🖥️ Search & Keyboard Navigation
 1. **Search suggestions arrow navigation lacking visual feedback**: Converted `historyIndex` to reactive `RxInt`, wrapped `SearchBar` in `Focus`, and used `Obx` on `SearchItem` to actively highlight the background color as you navigate with arrow keys (like YouTube).
