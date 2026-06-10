@@ -10,3 +10,11 @@ releases:
         package:
           platform: linux
           target: rpm
+      - name: release-dev-linux-appimage
+        package:
+          platform: linux
+          target: appimage
+      - name: release-dev-windows-exe
+        package:
+          platform: windows
+          target: exe

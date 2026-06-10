@@ -77,7 +77,7 @@ jobs:
           dart pub global activate flutter_distributor
           export PATH="$PATH":"$HOME/.pub-cache/bin"
           
-          flutter_distributor release --name dev --jobs release-dev-linux-deb,release-dev-linux-rpm
+          flutter_distributor release --name dev --jobs release-dev-linux-deb,release-dev-linux-rpm,release-dev-linux-appimage
           
           flutter build linux --release
           mkdir -p dist
@@ -92,6 +92,8 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           cp dist/*/linux-*/*.deb dist/ || true
           cp dist/*/linux-*/*.rpm dist/ || true
+          cp dist/*/linux-*/*.AppImage dist/ || true
+          cp dist/*/linux-*/*.appimage dist/ || true
           
       - uses: actions/upload-artifact@v4
         with:
@@ -123,9 +125,16 @@ jobs:
         
       - name: Build and Package Windows
         run: |
+          dart pub global activate flutter_distributor
+          flutter_distributor release --name dev --jobs release-dev-windows-exe
+          
+          mkdir dist
+          # Copy EXE from flutter_distributor output
+          Get-ChildItem -Path dist -Recurse -Filter *.exe | Copy-Item -Destination dist
+          
+          # Continue building the ZIP as a fallback
           flutter build windows --release
           if ($LASTEXITCODE -ne 0) { throw "Flutter build failed with exit code $LASTEXITCODE" }
-          mkdir dist
           $releaseDir = "build\windows\x64\runner\Release"
           if (Test-Path $releaseDir) {
             Compress-Archive -Path "$releaseDir\*" -DestinationPath dist\harmonymusic-windows.zip
@@ -163,15 +172,17 @@ jobs:
           find . -name "*.zip" -exec cp {} release-assets/ \;
           find . -name "*.deb" -exec cp {} release-assets/ \;
           find . -name "*.rpm" -exec cp {} release-assets/ \;
+          find . -iname "*.appimage" -exec cp {} release-assets/ \;
+          find . -name "*.exe" -exec cp {} release-assets/ \;
           
           cd release-assets
           
-          # Rename Android APKs to match standard naming
+          # Rename Android APKs to match standard naming (stripping -release)
           if [ -f "app-armeabi-v7a-release.apk" ]; then
-            mv app-armeabi-v7a-release.apk harmonymusic-${VERSION}-armeabi-v7a-release.apk
+            mv app-armeabi-v7a-release.apk harmonymusic-${VERSION}-armeabi-v7a.apk
           fi
           if [ -f "app-arm64-v8a-release.apk" ]; then
-            mv app-arm64-v8a-release.apk harmonymusic-${VERSION}-arm64-v8a-release.apk
+            mv app-arm64-v8a-release.apk harmonymusic-${VERSION}-arm64-v8a.apk
           fi
           if [ -f "app-release.apk" ]; then
             mv app-release.apk harmonymusic-${VERSION}.apk
@@ -193,6 +204,16 @@ jobs:
           RPM_FILE=$(ls *.rpm 2>/dev/null | head -n 1)
           if [ -n "$RPM_FILE" ]; then
             mv "$RPM_FILE" "harmonymusic-${VERSION}-linux.rpm"
+          fi
+          
+          APPIMAGE_FILE=$(ls *.AppImage *.appimage 2>/dev/null | head -n 1)
+          if [ -n "$APPIMAGE_FILE" ]; then
+            mv "$APPIMAGE_FILE" "harmonymusic-${VERSION}-linux.AppImage"
+          fi
+          
+          EXE_FILE=$(ls *.exe 2>/dev/null | head -n 1)
+          if [ -n "$EXE_FILE" ]; then
+            mv "$EXE_FILE" "harmonymusic-${VERSION}-windows.exe"
           fi
           
           # Generate SHA256 sums
