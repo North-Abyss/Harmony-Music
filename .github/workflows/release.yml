@@ -72,16 +72,17 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
         
-      - name: Package for Linux
+      - name: Build and Package for Linux
         run: |
-          dart pub global activate flutter_distributor
-          export PATH="$PATH":"$HOME/.pub-cache/bin"
-          flutter_distributor package --platform linux --targets deb,rpm,appimage
+          flutter build linux --release
+          mkdir -p dist
+          cd build/linux/x64/release/bundle
+          tar -czf ../../../../../dist/harmonymusic-linux.tar.gz *
           
       - uses: actions/upload-artifact@v4
         with:
           name: linux-builds
-          path: dist/*/*/*
+          path: dist/
 
   build-windows:
     name: Build Windows Exe
@@ -106,15 +107,16 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
         
-      - name: Build Windows Exe
+      - name: Build and Package Windows
         run: |
-          dart pub global activate flutter_distributor
-          flutter_distributor package --platform windows --targets exe
+          flutter build windows --release
+          mkdir dist
+          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath dist\harmonymusic-windows.zip
           
       - uses: actions/upload-artifact@v4
         with:
           name: windows-builds
-          path: dist/*/*/*.exe
+          path: dist/
 
   create-release:
     name: Create GitHub Release
@@ -122,6 +124,8 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
+      - uses: actions/checkout@v4
+      
       - uses: actions/download-artifact@v4
       
       - name: Organize and Rename Artifacts
@@ -135,10 +139,8 @@ jobs:
           
           # Copy all built files
           find . -name "*.apk" -exec cp {} release-assets/ \;
-          find . -name "*.deb" -exec cp {} release-assets/ \;
-          find . -name "*.rpm" -exec cp {} release-assets/ \;
-          find . -name "*.AppImage" -exec cp {} release-assets/ \;
-          find . -name "*.exe" -exec cp {} release-assets/ \;
+          find . -name "*.tar.gz" -exec cp {} release-assets/ \;
+          find . -name "*.zip" -exec cp {} release-assets/ \;
           
           cd release-assets
           
@@ -153,13 +155,13 @@ jobs:
             mv app-release.apk harmonymusic-${VERSION}.apk
           fi
           
-          # Rename flutter_distributor packages if they have generic names
-          for file in *; do
-            if [[ "$file" != harmonymusic* ]]; then
-              ext="${file##*.}"
-              mv "$file" "harmonymusic-${VERSION}.${ext}"
-            fi
-          done
+          if [ -f "harmonymusic-linux.tar.gz" ]; then
+            mv "harmonymusic-linux.tar.gz" "harmonymusic-${VERSION}-linux.tar.gz"
+          fi
+          
+          if [ -f "harmonymusic-windows.zip" ]; then
+            mv "harmonymusic-windows.zip" "harmonymusic-${VERSION}-windows.zip"
+          fi
           
           # Generate SHA256 sums
           sha256sum * > harmonymusic-v${VERSION}.sha256sum
@@ -168,5 +170,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: release-assets/*
-          draft: true
+          draft: false
+          body_path: release-notes.md
           generate_release_notes: true
