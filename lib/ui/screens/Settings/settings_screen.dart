@@ -655,11 +655,11 @@ class SettingsScreen extends StatelessWidget {
                       },
                     ),
                   ]),
-              CustomExpansionTile(
+              const CustomExpansionTile(
                   icon: Icons.keyboard,
                   title: "Keyboard Shortcuts",
                   children: [
-                    const KeyboardShortcutsMenu(),
+                    KeyboardShortcutsMenu(),
                   ]),
               CustomExpansionTile(
                 icon: Icons.info,

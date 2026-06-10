@@ -55,7 +55,7 @@ class KeyboardShortcutsMenu extends StatelessWidget {
           const SizedBox(height: 12),
           ...shortcuts.entries
               .map((e) => _buildShortcutRow(context, e.key, e.value))
-              .toList(),
+              ,
           const Divider(height: 30),
         ],
       ),
