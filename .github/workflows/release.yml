@@ -76,8 +76,13 @@ jobs:
         run: |
           flutter build linux --release
           mkdir -p dist
-          cd build/linux/x64/release/bundle
-          tar -czf ../../../../../dist/harmonymusic-linux.tar.gz *
+          RELEASE_DIR=$(find build/linux -type d -name "bundle" | grep -i "release" | head -n 1)
+          if [ -z "$RELEASE_DIR" ]; then
+            echo "Release bundle directory not found!"
+            exit 1
+          fi
+          cd "$RELEASE_DIR"
+          tar -czf "$GITHUB_WORKSPACE/dist/harmonymusic-linux.tar.gz" *
           
       - uses: actions/upload-artifact@v4
         with:
@@ -110,8 +115,14 @@ jobs:
       - name: Build and Package Windows
         run: |
           flutter build windows --release
+          if ($LASTEXITCODE -ne 0) { throw "Flutter build failed with exit code $LASTEXITCODE" }
           mkdir dist
-          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath dist\harmonymusic-windows.zip
+          $releaseDir = Get-ChildItem -Path build\windows -Directory -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Release' } | Select-Object -First 1
+          if ($releaseDir) {
+            Compress-Archive -Path "$($releaseDir.FullName)\*" -DestinationPath dist\harmonymusic-windows.zip
+          } else {
+            throw "Release directory not found in build\windows"
+          }
           
       - uses: actions/upload-artifact@v4
         with:
