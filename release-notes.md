@@ -14,6 +14,6 @@ We are thrilled to announce the highly anticipated v1.13.0 release! This update 
 
 ### 🛠️ Under The Hood
 * **Modernized Flutter Architecture:** Purged dozens of deprecated `Color` properties to make the codebase fully compliant and optimized for Flutter 3.24+.
-* **Automated CI/CD:** Our deployment pipeline is now 100% automated using GitHub Actions v4! Android APKs, Windows Executables, and Linux AppImages/Debs/Rpms are built, signed, and released automatically.
+* **Automated CI/CD:** Our deployment pipeline is now 100% automated using GitHub Actions v4! Android APKs, as well as native portable standalone builds for Windows (ZIP) and Linux (TAR.GZ) are now built and released directly, replacing the old `flutter_distributor` toolchain for greater reliability.
 
 *Thank you to all our contributors for keeping the music playing! ❤️*

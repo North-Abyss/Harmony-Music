@@ -46,7 +46,7 @@ This document acts as the primary Agent Database and Context Memory for AI agent
 │   │   └── widgets/         # Reusable widgets and bottom sheets
 │   └── utils/               # General helpers, localization, and formatters
 ├── action.yml               # Custom Docker-based GitHub action for APK builds
-├── distribute_options.yaml  # Config for native .deb and .rpm packaging via flutter_distributor
+├── distribute_options.yaml  # (Deprecated) Old config for flutter_distributor
 ├── jnigen.yaml              # JNI bindings configuration for native Android C/C++ bridges
 └── git-sync.sh              # Custom Bash script for deployment & tagging
 ```
@@ -67,8 +67,8 @@ graph TD
     
     subgraph CI/CD
       GH[GitHub Actions] --> APK[Android APKs]
-      GH --> LNX[Linux Deb/Rpm]
-      GH --> WIN[Windows Exe]
+      GH --> LNX[Linux Tar.gz]
+      GH --> WIN[Windows Zip]
     end
     
     subgraph UI Components
