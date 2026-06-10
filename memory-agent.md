@@ -21,6 +21,11 @@ This document acts as the primary Agent Database and Context Memory for AI agent
 - **Build APK**: `flutter build apk --release`
 - **Sync with upstream**: `bash git-sync.sh` (Syncs with upstream and pushes tags/deployments)
 
+## Release Guidelines
+- **Update version**: Update the version number in `pubspec.yaml` and any relevant version files before making a new release.
+- **Update Logs**: Update both `CHANGELOG.md` and `release-notes.md` with the new changes before triggering a release.
+- **Use Single script**: Run `bash git-sync.sh` or `./git-sync.sh`. This script will automatically sync with upstream, prompt for necessary checks, and create/push tags to trigger deployments.
+
 ## Project Structure
 
 ```text

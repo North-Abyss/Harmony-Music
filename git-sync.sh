@@ -49,6 +49,13 @@ echo -e "${YELLOW}--- Release Manager ---${NC}"
 read -p "Do you want to trigger a Cloud Release for these changes? (y/n): " trigger_release
 
 if [[ "$trigger_release" == "y" || "$trigger_release" == "Y" ]]; then
+    echo -e "${RED}WAIT! Have you updated pubspec.yaml, CHANGELOG.md, and release-notes.md?${NC}"
+    read -p "Proceed with release? (y/n): " confirm_docs
+    if [[ "$confirm_docs" != "y" && "$confirm_docs" != "Y" ]]; then
+        echo -e "${BLUE}Release aborted. Please update the documentation and try again!${NC}"
+        exit 0
+    fi
+    
     read -p "Enter version tag (e.g., v1.0.0 or v0.0.0 for testing): " version_tag
     
     echo -e "${BLUE}Preparing tag $version_tag...${NC}"

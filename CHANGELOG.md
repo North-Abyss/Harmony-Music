@@ -1,3 +1,14 @@
+# 1.13.0
+* Added a fully native QR Code Scanner using hardware cameras
+* Added "Scan from Image File" fallback for Linux desktops lacking webcam drivers
+* Added YouTube-style search navigation with Arrow Up/Down keys for search history and suggestions
+* Added "Copy Link" button natively into the song info bottom sheet
+* Fixed Escape key crash on desktop closing the entire application
+* Added Multi-Camera selector dropdown to prevent initialization crashes on multi-lens devices
+* Overhauled desktop side-rail navigation to use ClampingScrollPhysics
+* Modernized Flutter architecture for full compliance with Flutter 3.24+
+* Automated CI/CD for native portable Linux (TAR.GZ) and Windows (ZIP) builds instead of flutter_distributor
+
 # 1.12.2
 * Added wakelock support to keep screen awake while playing music (can be toggled from settings)
 * Enabled downloading in external storage for Android devices
