@@ -128,7 +128,7 @@ jobs:
           dart pub global activate flutter_distributor
           flutter_distributor release --name dev --jobs release-dev-windows-exe
           
-          mkdir dist
+          if (!(Test-Path dist)) { mkdir dist }
           # Copy EXE from flutter_distributor output
           Get-ChildItem -Path dist -Recurse -Filter *.exe | Copy-Item -Destination dist
           

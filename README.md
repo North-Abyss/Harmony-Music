@@ -31,6 +31,10 @@ A cross platform app for music streaming made with Flutter(Android, Windows, lin
 * No Advertisment
 * No Login required
 * Piped playlist integration
+* Cross-Platform QR Code Sharing & Scanning
+* Keyboard Navigation & Shortcuts (Arrow keys for Search, Tab for focus)
+* Double-tap to seek & dedicated +/- 10s buttons
+* Live Lyrics translation
 
 
 # Architecture
@@ -109,12 +113,13 @@ Synced lyrics provided by <a href = 'https://lrclib.net' >LRCLIB</a> <br/>
 <a href = 'https://piped.video' >Piped</a> for playlists.
 
 #### Major Packages used
-* just_audio: ^0.9.40  -  audio player for android
-* media_kit: ^1.1.9 - audio player for linux and windows
-* audio_service: ^0.18.15 - manage background music & platform audio services
-* get: ^4.6.6 -  package for high-performance state management, intelligent dependency injection, and route management
-* youtube_explode_dart: ^2.0.2 - Third party package to provide song url
-* hive: ^2.2.3 - offline db used 
+* just_audio: ^0.9.46  -  audio player for android
+* media_kit: ^1.1.11 - audio player for linux and windows
+* audio_service: ^0.18.17 - manage background music & platform audio services
+* get: ^4.7.1 -  package for high-performance state management, intelligent dependency injection, and route management
+* youtube_explode_dart: Third party package to provide song url
+* hive: ^2.2.3 - offline db used
 * hive_flutter: ^1.1.0
+* flutter_zxing: ^2.3.0 - cross-platform QR barcode scanning
 
 
