@@ -20,3 +20,5 @@ Features:
 - No Advertisment
 - No Login required
 - Piped playlist integration
+
+Project Website & Source Code: https://github.com/North-Abyss/Harmony-Music

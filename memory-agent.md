@@ -37,6 +37,8 @@ This document acts as the primary Agent Database and Context Memory for AI agent
 │   │   └── release.yml      # Primary Multi-platform Release pipeline
 │   └── copilot-instructions.md # OG repo's AI guidelines
 ├── fastlane/                # App store metadata (F-Droid / Play Store)
+├── linux/packaging/         # Linux packaging configs (DEB, RPM, AppImage) & AppStream Metadata
+├── windows/packaging/       # Windows packaging configs (make_config.yaml)
 ├── win_cert/                # Windows digital signature certificates (.crt, .pem)
 ├── lib/
 │   ├── base_class/          # Base classes and abstractions
@@ -55,6 +57,11 @@ This document acts as the primary Agent Database and Context Memory for AI agent
 ├── jnigen.yaml              # JNI bindings configuration for native Android C/C++ bridges
 └── git-sync.sh              # Custom Bash script for deployment & tagging
 ```
+
+## App Store Metadata & Packaging
+- **Android**: Metadata for F-Droid and Play Store is stored in `fastlane/metadata/android/en-US/`. This includes descriptions, changelogs, and screenshots.
+- **Linux (AppStream)**: Rich metadata for Linux software centers (Screenshots, descriptions, categories) is defined in `linux/packaging/deb/usr/share/metainfo/harmonymusic.metainfo.xml`. This file is automatically injected into DEB, RPM, and AppImage builds by `flutter_distributor`.
+- **Windows**: Package metadata (Publisher URL, App ID, Display Name) is defined in `windows/packaging/exe/make_config.yaml` for `flutter_distributor`.
 
 ### Architecture Overview
 

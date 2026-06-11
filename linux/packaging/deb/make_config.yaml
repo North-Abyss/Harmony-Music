@@ -5,7 +5,8 @@ maintainer:
 priority: optional
 section: x11
 installed_size: 20000
-
+homepage: https://github.com/North-Abyss/Harmony-Music
+description: A cross platform app for music streaming.
 dependencies:
   - mpv
   - libmpv1 | libmpv2

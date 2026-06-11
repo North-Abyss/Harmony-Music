@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>harmonymusic.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Harmony Music</name>
+  <summary>A cross platform app for music streaming</summary>
+  
+  <description>
+    <p>Harmony Music is a beautiful, cross-platform app for music streaming made with Flutter.</p>
+    <ul>
+      <li>Ability to play song from YouTube/YouTube Music.</li>
+      <li>Song cache while playing</li>
+      <li>Radio feature support</li>
+      <li>Background music</li>
+      <li>Playlist creation and bookmark support</li>
+      <li>Artist and Album bookmark support</li>
+      <li>Import song, Playlist, Album, Artist via sharing</li>
+      <li>Streaming quality control</li>
+      <li>Song downloading support</li>
+      <li>Dynamic Theme</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">harmonymusic.desktop</launchable>
+
+  <url type="homepage">https://github.com/North-Abyss/Harmony-Music</url>
+  <url type="bugtracker">https://github.com/North-Abyss/Harmony-Music/issues</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/North-Abyss/Harmony-Music/main/images/cover.png</image>
+      <caption>Home screen showing trending songs and playlists</caption>
+    </screenshot>
+  </screenshots>
+
+  <categories>
+    <category>Audio</category>
+    <category>Music</category>
+    <category>Player</category>
+  </categories>
+  
+  <provides>
+    <binary>harmonymusic</binary>
+  </provides>
+</component>
