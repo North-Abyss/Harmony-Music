@@ -13,6 +13,25 @@ This file tracks ongoing issues, feature requests, and bug reports for faster cl
 - **Affected packages**: `audiotags`, `jni`, `smtc_windows`, `media_kit_libs_linux`
 - **Notes**: Web support would require conditional imports or web-compatible alternatives for these packages.
 
+### 2. Build fails on Linux (missing packages)
+- **Priority**: High
+- **Status**: Open
+- **Description**: `flutter run -d linux` fails with CMake Errors regarding missing packages such as `gtk+-3.0` and `ayatana-appindicator3-0.1`.
+- **Notes**: Requires installing `libgtk-3-dev` and `libayatana-appindicator3-dev` on the host system before building the Linux application.
+
+### 3. Deprecated API Usage & Unused Imports
+- **Priority**: Low
+- **Status**: Open
+- **Description**: Several Flutter APIs have been deprecated in recent SDK versions, and some files have unused imports.
+- **Affected areas**:
+  - `test.dart`: Unused import `flutter_distributor`.
+  - `settings_screen.dart`: `groupValue` and `onChanged` are deprecated; migrate to `RadioGroup`.
+  - `add_to_playlist.dart`: `groupValue` and `onChanged` are deprecated; migrate to `RadioGroup`.
+  - `create_playlist_dialog.dart`: `groupValue` and `onChanged` are deprecated; migrate to `RadioGroup`.
+  - `keyboard_shortcuts_menu.dart`: `dialogBackgroundColor` is deprecated; migrate to `DialogThemeData.backgroundColor`.
+  - `modification_list.dart`: `onReorder` is deprecated; migrate to `onReorderItem`.
+  - `up_next_queue.dart`: `onReorder` is deprecated; migrate to `onReorderItem`.
+
 ---
 
 ## 🚀 Features
@@ -22,6 +41,11 @@ This file tracks ongoing issues, feature requests, and bug reports for faster cl
 ---
 
 ## ✅ Resolved
+
+### 🐛 Bug Fixes
+* **Version check failure with v-prefix**: Fixed an issue where the app's version checker would fail to parse GitHub tags containing the `v` or `V` prefix (e.g. `v1.13.0`). 
+* **10s seek buttons layout overflows**: Placed the +/- 10s seek buttons perfectly front-and-back of the progress bar and shifted the progress timestamps to `TimeLabelLocation.sides`. This elegantly packs the playback row without causing horizontal overflows (Right by 31px) or vertical height overflows (Bottom by 32px) on strict narrow desktop pane layouts.
+* **Backup file name missing date**: Updated the backup export to use a structured, systematic filename format `hm-backup-yyyy-MM-dd-HH-mm-ss.hmb`.
 
 ### 🚀 New Features
 23. **QR Code Sharing and Scanning**: Added a new "QR Code" option to share sheets for songs, albums, and playlists. Integrated `qr_flutter` to dynamically generate QR codes. Added a dedicated `QrScannerScreen` using `flutter_zxing`, accessible directly from both the Desktop and Mobile Search Bars, allowing users to scan any YouTube or Harmony Music QR code to instantly open the corresponding media.
@@ -54,5 +78,5 @@ This file tracks ongoing issues, feature requests, and bug reports for faster cl
 18. **YouTube Music search returning empty results**: Updated `music_service.dart` to parse `itemSectionRenderer` as the YouTube Music search API recently changed its structure.
 19. **`ionicons` package breaks with Flutter 3.44+**: Removed `ionicons` dependency, replaced with Material Icons (`Icons.shuffle`, `Icons.play_circle`, `Icons.ondemand_video`).
 20. **`DialogTheme` type mismatch with Flutter 3.44+**: Changed `DialogTheme(...)` to `DialogThemeData(...)` in `theme_controller.dart:307`.
-21. **CMake mimalloc extraction fails with spaces**: Patched `media_kit_libs_linux` CMakeLists.txt (line 93) — removed inner escaped quotes from tar extraction command.
+21. **CMake mimalloc/libmpv extraction fails with spaces**: Patched `media_kit_libs_linux` and `media_kit_libs_windows_audio` CMakeLists.txt files — removed inner escaped quotes from tar extraction commands and fixed flawed dependency checking logic so Ninja builds consistently on systems with spaces in their file paths.
 22. **Update maintainer info and README**: Updated `README.md` and `lib/ui/screens/Settings/settings_screen.dart` to clearly state that this is a continued fork maintained by North-Abyss.

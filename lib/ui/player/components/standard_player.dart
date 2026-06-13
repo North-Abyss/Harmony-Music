@@ -29,7 +29,7 @@ class StandardPlayer extends StatelessWidget {
         size.width - 60; //((size.height < 750) ? 90 : 60);
     //playerArtImageSize = playerArtImageSize > 350 ? 350 : playerArtImageSize;
     final spaceAvailableForArtImage =
-        size.height - (70 + Get.mediaQuery.padding.bottom + 330);
+        size.height - (70 + Get.mediaQuery.padding.bottom + 400);
     playerArtImageSize = playerArtImageSize > spaceAvailableForArtImage
         ? spaceAvailableForArtImage
         : playerArtImageSize;

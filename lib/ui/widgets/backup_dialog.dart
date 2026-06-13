@@ -213,8 +213,11 @@ class BackupDialogController extends GetxController {
     backupRunning.value = true;
     final exportDirPath = pickedFolderPath.toString();
 
+    final now = DateTime.now();
+    final formattedDate = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}-${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}-${now.second.toString().padLeft(2, '0')}';
+
     compressFilesInBackground(filesToExport,
-            '$exportDirPath/${DateTime.now().millisecondsSinceEpoch.toString()}.hmb')
+            '$exportDirPath/hm-backup-$formattedDate.hmb')
         .then((_) {
       backupRunning.value = false;
       isbackupCompleted.value = true;

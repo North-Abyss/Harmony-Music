@@ -91,25 +91,51 @@ class PlayerControlWidget extends StatelessWidget {
           const SizedBox(
             height: 20,
           ),
-          GetX<PlayerController>(builder: (controller) {
-            return ProgressBar(
-              thumbRadius: 7,
-              barHeight: 4.5,
-              baseBarColor: Theme.of(context).sliderTheme.inactiveTrackColor,
-              bufferedBarColor:
-                  Theme.of(context).sliderTheme.valueIndicatorColor,
-              progressBarColor: Theme.of(context).sliderTheme.activeTrackColor,
-              thumbColor: Theme.of(context).sliderTheme.thumbColor,
-              timeLabelTextStyle: Theme.of(context)
-                  .textTheme
-                  .titleMedium!
-                  .copyWith(fontSize: 14),
-              progress: controller.progressBarStatus.value.current,
-              total: controller.progressBarStatus.value.total,
-              buffered: controller.progressBarStatus.value.buffered,
-              onSeek: controller.seek,
-            );
-          }),
+          Row(
+            children: [
+              IconButton(
+                iconSize: 24,
+                onPressed: playerController.seekBackward,
+                icon: Icon(
+                  Icons.replay_10,
+                  color: Theme.of(context).textTheme.titleMedium!.color,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GetX<PlayerController>(builder: (controller) {
+                  return ProgressBar(
+                    thumbRadius: 7,
+                    barHeight: 4.5,
+                    timeLabelLocation: TimeLabelLocation.sides,
+                    timeLabelPadding: 10.0,
+                    baseBarColor: Theme.of(context).sliderTheme.inactiveTrackColor,
+                    bufferedBarColor:
+                        Theme.of(context).sliderTheme.valueIndicatorColor,
+                    progressBarColor: Theme.of(context).sliderTheme.activeTrackColor,
+                    thumbColor: Theme.of(context).sliderTheme.thumbColor,
+                    timeLabelTextStyle: Theme.of(context)
+                        .textTheme
+                        .titleMedium!
+                        .copyWith(fontSize: 14),
+                    progress: controller.progressBarStatus.value.current,
+                    total: controller.progressBarStatus.value.total,
+                    buffered: controller.progressBarStatus.value.buffered,
+                    onSeek: controller.seek,
+                  );
+                }),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                iconSize: 24,
+                onPressed: playerController.seekForward,
+                icon: Icon(
+                  Icons.forward_10,
+                  color: Theme.of(context).textTheme.titleMedium!.color,
+                ),
+              ),
+            ],
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -126,25 +152,9 @@ class PlayerControlWidget extends StatelessWidget {
                                 .color!
                                 .withValues(alpha: 0.2),
                       ))),
-              IconButton(
-                iconSize: 24,
-                onPressed: playerController.seekBackward,
-                icon: Icon(
-                  Icons.replay_10,
-                  color: Theme.of(context).textTheme.titleMedium!.color,
-                ),
-              ),
               _previousButton(playerController, context),
               const CircleAvatar(radius: 35, child: AnimatedPlayButton(key: Key("playButton"),)),
               _nextButton(playerController, context),
-              IconButton(
-                iconSize: 24,
-                onPressed: playerController.seekForward,
-                icon: Icon(
-                  Icons.forward_10,
-                  color: Theme.of(context).textTheme.titleMedium!.color,
-                ),
-              ),
               Obx(() {
                 return IconButton(
                     onPressed: playerController.toggleLoopMode,

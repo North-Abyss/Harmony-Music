@@ -16,7 +16,7 @@ This document acts as the primary Agent Database and Context Memory for AI agent
 
 ## Output Guidelines
 - **Run on Chrome**: `flutter run -d chrome` (Note: Currently blocked by `dart:ffi` packages)
-- **Run on Linux**: `flutter run -d linux`
+- **Run on Linux**: `flutter run -d linux` (Note: Requires `libgtk-3-dev` and `libayatana-appindicator3-dev` installed on host system)
 - **Build Web Release**: `flutter build web --release`
 - **Build APK**: `flutter build apk --release`
 - **Sync with upstream**: `bash git-sync.sh` (Syncs with upstream and pushes tags/deployments)

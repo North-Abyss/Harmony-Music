@@ -167,8 +167,8 @@ Future<bool> newVersionCheck(String currentVersion) async {
             .get("https://api.github.com/repos/North-Abyss/Harmony-Music/tags"))
         .data;
     final availableVersion = tags[0]['name'] as String;
-    List currentVersion_ = currentVersion.substring(1).split(".");
-    List availableVersion_ = availableVersion.substring(1).split(".");
+    List currentVersion_ = currentVersion.replaceAll(RegExp(r'[vV]'), '').split(".");
+    List availableVersion_ = availableVersion.replaceAll(RegExp(r'[vV]'), '').split(".");
     if (int.parse(availableVersion_[0]) > int.parse(currentVersion_[0])) {
       return true;
     } else if (int.parse(availableVersion_[1]) >
