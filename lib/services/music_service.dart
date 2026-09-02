@@ -28,6 +28,8 @@ class MusicServices extends getx.GetxService {
     'origin': domain,
     'cookie': 'CONSENT=YES+1',
   };
+  
+  Map<String, String> get headers => _headers;
 
   final Map<String, dynamic> _context = {
     'context': {
@@ -37,6 +39,32 @@ class MusicServices extends getx.GetxService {
       },
       'user': {}
     }
+  };
+
+  // Separate context for the player endpoint — uses ANDROID client
+  // which is confirmed to return streams on music.youtube.com
+  final Map<String, dynamic> _playerContext = {
+    'context': {
+      'client': {
+        'clientName': 'ANDROID',
+        'clientVersion': '20.10.38',
+        'userAgent': 'com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip',
+        'hl': 'en',
+        'timeZone': 'UTC',
+        'utcOffsetMinutes': 0,
+        'osName': 'Android',
+        'osVersion': '11',
+      },
+      'user': {}
+    }
+  };
+
+  final Map<String, String> _playerHeaders = {
+    'content-type': 'application/json',
+    'user-agent': 'com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip',
+    'origin': domain,
+    'x-youtube-client-name': '3',
+    'x-youtube-client-version': '20.10.38',
   };
 
   @override
@@ -122,7 +150,7 @@ class MusicServices extends getx.GetxService {
       if (response.statusCode == 200) {
         return response;
       } else {
-        return _sendRequest(action, data, additionalParams: additionalParams);
+        return await _sendRequest(action, data, additionalParams: additionalParams);
       }
     } on DioException catch (e) {
       printINFO("Error $e");
@@ -546,6 +574,37 @@ class MusicServices extends getx.GetxService {
       return [true, list['tracks']];
     }
     return [false, null];
+  }
+
+  /// Fetch streaming data (adaptive formats) directly from YouTube Music
+  /// Uses the ANDROID client which returns streams on music.youtube.com
+  Future<List<Map<String, dynamic>>> getStreamInfo(String songId) async {
+    try {
+      final data = Map<String, dynamic>.from(_playerContext);
+      data['videoId'] = songId;
+      // Use music.youtube.com player endpoint with ANDROID client
+      final response = await dio.post(
+        '${domain}youtubei/v1/player?prettyPrint=false&alt=json&key=AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30',
+        options: Options(headers: {
+          ..._playerHeaders,
+          if (_headers.containsKey('X-Goog-Visitor-Id'))
+            'X-Goog-Visitor-Id': _headers['X-Goog-Visitor-Id']!,
+        }),
+        data: data,
+      );
+      if (response.statusCode == 200 && response.data.containsKey('streamingData')) {
+        final adaptive = response.data['streamingData']['adaptiveFormats'] as List?;
+        if (adaptive != null && adaptive.isNotEmpty) {
+          return adaptive
+              .where((f) => f['mimeType'].toString().contains('audio'))
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+        }
+      }
+    } catch (e) {
+      // Swallow and let fallback handle it
+    }
+    return [];
   }
 
   Future<Map<String, dynamic>> search(String query,

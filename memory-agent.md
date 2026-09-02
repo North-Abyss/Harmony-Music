@@ -7,7 +7,8 @@ This document acts as the primary Agent Database and Context Memory for AI agent
 
 ## Project Context
 - **Name**: Harmony Music
-- **Package Name**: `harmonymusic`
+- **Dart Package Name**: `harmonymusic`
+- **App ID / Bundle Identifier**: `com.northabyss.harmonymusic`
 - **Version**: 1.13.0
 - **Forked From**: [anandnet/Harmony-Music](https://github.com/anandnet/Harmony-Music)
 - **Maintained By**: [North-Abyss/Harmony-Music](https://github.com/North-Abyss/Harmony-Music)

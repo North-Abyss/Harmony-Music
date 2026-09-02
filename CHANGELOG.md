@@ -8,6 +8,9 @@
 * Overhauled desktop side-rail navigation to use ClampingScrollPhysics
 * Modernized Flutter architecture for full compliance with Flutter 3.24+
 * Automated CI/CD for native portable Linux (TAR.GZ) and Windows (ZIP) builds instead of flutter_distributor
+* Fixed YouTube Music 403 Forbidden streaming errors caused by MPV's aggressive ytdl_hook
+* Built a custom Dart LocalProxy server to mask YouTube stream URLs from MPV and ensure smooth audio routing
+* Enhanced StreamProvider inner client fallbacks to securely extract playable YouTube audio streams using ANDROID and IOS configurations
 
 # 1.12.2
 * Added wakelock support to keep screen awake while playing music (can be toggled from settings)

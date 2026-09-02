@@ -59,11 +59,12 @@ class CreateNRenamePlaylistPopup extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Radio(
-                              value: "piped",
+                          RadioGroup(
                               groupValue:
                                   librPlstCntrller.playlistCreationMode.value,
-                              onChanged: librPlstCntrller.changeCreationMode),
+                              onChanged: librPlstCntrller.changeCreationMode,
+                              child: const Radio(
+                                  value: "piped")),
                           Text("Piped".tr),
                         ],
                       ),
@@ -72,11 +73,12 @@ class CreateNRenamePlaylistPopup extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          Radio(
-                              value: "local",
+                          RadioGroup(
                               groupValue:
                                   librPlstCntrller.playlistCreationMode.value,
-                              onChanged: librPlstCntrller.changeCreationMode),
+                              onChanged: librPlstCntrller.changeCreationMode,
+                              child: const Radio(
+                                  value: "local")),
                           Text("local".tr),
                         ],
                       )

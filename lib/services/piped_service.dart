@@ -12,17 +12,20 @@ class PipedServices extends GetxService {
   bool _isLoggedIn = false;
 
   PipedServices() {
-    final appPrefsBox = Hive.box('AppPrefs');
-    final piped = appPrefsBox.get('piped') ??
-        {"isLoggedIn": false, "token": "", "instApiUrl": ""};
-    _isLoggedIn = piped["isLoggedIn"];
-    if (isLoggedIn) {
-      _headers["Authorization"] = piped['token'];
-      _insApiUrl = piped["instApiUrl"];
+    if (Hive.isBoxOpen('AppPrefs')) {
+      final appPrefsBox = Hive.box('AppPrefs');
+      final piped = appPrefsBox.get('piped') ??
+          {"isLoggedIn": false, "token": "", "instApiUrl": ""};
+      _isLoggedIn = piped["isLoggedIn"];
+      if (isLoggedIn) {
+        _headers["Authorization"] = piped['token'];
+        _insApiUrl = piped["instApiUrl"];
+      }
     }
   }
 
   bool get isLoggedIn => _isLoggedIn;
+  String get apiUrl => _insApiUrl.isEmpty ? "https://pipedapi.kavin.rocks" : _insApiUrl;
 
   Future<Res> login(String insApiUrl, String userName, String password) async {
     final url = "$insApiUrl/login";
@@ -69,7 +72,7 @@ class PipedServices extends GetxService {
       bool isSongListReq = false}) async {
     final url = isInstanceListReq
         ? "https://piped-instances.kavin.rocks/"
-        : "$_insApiUrl$endpoint";
+        : "$apiUrl$endpoint";
     try {
       final response = reqType == "post"
           ? await _dio.post(
@@ -140,6 +143,10 @@ class PipedServices extends GetxService {
   Future<Res> removeFromPlaylist(String plalistId, int index) async {
     return await _sendRequest("/user/playlists/remove",
         data: {"playlistId": plalistId, "index": index});
+  }
+
+  Future<Res> getStream(String videoId) async {
+    return await _sendRequest("/streams/$videoId", reqType: "get");
   }
 
   Future<List<MediaItem>> getPlaylistSongs(String playlistid) async {

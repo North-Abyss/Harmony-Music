@@ -67,12 +67,13 @@ class AddToPlaylist extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Radio(
-                              value: "piped",
+                          RadioGroup(
                               groupValue:
                                   addToPlaylistController.playlistType.value,
                               onChanged:
-                                  addToPlaylistController.changePlaylistType),
+                                  addToPlaylistController.changePlaylistType,
+                              child: const Radio(
+                                  value: "piped")),
                           Text("Piped".tr),
                         ],
                       ),
@@ -81,12 +82,13 @@ class AddToPlaylist extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          Radio(
-                              value: "local",
+                          RadioGroup(
                               groupValue:
                                   addToPlaylistController.playlistType.value,
                               onChanged:
-                                  addToPlaylistController.changePlaylistType),
+                                  addToPlaylistController.changePlaylistType,
+                              child: const Radio(
+                                  value: "local")),
                           Text("local".tr),
                         ],
                       )

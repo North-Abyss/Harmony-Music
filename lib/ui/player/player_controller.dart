@@ -670,7 +670,11 @@ class PlayerController extends GetxController
           (currentQueue.length == 2 && index == 1)) {
         return;
       }
-      onReorder(index, currentSongIndex.value + 1);
+      int newIndex = currentSongIndex.value + 1;
+      if (index < newIndex) {
+        newIndex--;
+      }
+      onReorder(index, newIndex);
     } else {
       //Will add song just below the current song
       (currentIndx == currentQueue.length - 1)

@@ -98,7 +98,7 @@ void showKeyboardShortcutsDialog(BuildContext context) {
   }
   Get.dialog(
     AlertDialog(
-      backgroundColor: Theme.of(context).dialogBackgroundColor,
+      backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: const Row(
         children: [

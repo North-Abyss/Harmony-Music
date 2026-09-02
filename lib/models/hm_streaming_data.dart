@@ -5,12 +5,14 @@ class HMStreamingData {
   final String statusMSG;
   final Audio? lowQualityAudio;
   final Audio? highQualityAudio;
+  final Map<String, String>? streamHeaders;
   int qualityIndex = 1;
   HMStreamingData({
     required this.playable,
     required this.statusMSG,
     this.lowQualityAudio,
     this.highQualityAudio,
+    this.streamHeaders,
   });
 
   setQualityIndex(int index) {
@@ -28,11 +30,17 @@ class HMStreamingData {
     }
     final lowQualityAudio = Audio.fromJson(json['lowQualityAudio']);
     final highQualityAudio = Audio.fromJson(json['highQualityAudio']);
+    final headersMap = json['streamHeaders'] != null 
+        ? Map<String, String>.from(json['streamHeaders']) 
+        : null;
+        
     return HMStreamingData(
         playable: json['playable'],
         statusMSG: json['statusMSG'],
         lowQualityAudio: lowQualityAudio,
-        highQualityAudio: highQualityAudio);
+        highQualityAudio: highQualityAudio,
+        streamHeaders: headersMap,
+    );
   }
 
   Map<String, dynamic> toJson() => {
@@ -40,5 +48,6 @@ class HMStreamingData {
         "statusMSG": statusMSG,
         "lowQualityAudio": lowQualityAudio?.toJson(),
         "highQualityAudio": highQualityAudio?.toJson(),
+        if (streamHeaders != null) "streamHeaders": streamHeaders,
       };
 }

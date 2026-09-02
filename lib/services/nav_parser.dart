@@ -455,13 +455,11 @@ Map<String, dynamic> parseWatchTrack(Map<String, dynamic> data) {
 }
 
 String? getTabBrowseId(Map<String, dynamic> watchNextRenderer, int tabId) {
-  if (!watchNextRenderer['tabs'][tabId]['tabRenderer']
-      .containsKey('unselectable')) {
-    return watchNextRenderer['tabs'][tabId]['tabRenderer']['endpoint']
-        ['browseEndpoint']['browseId'];
-  } else {
+  final tabRenderer = watchNextRenderer['tabs']?[tabId]?['tabRenderer'];
+  if (tabRenderer == null || tabRenderer.containsKey('unselectable')) {
     return null;
   }
+  return tabRenderer['endpoint']?['browseEndpoint']?['browseId'];
 }
 
 ///Parse playlist songs, Also used in Album Song parsing

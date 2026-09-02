@@ -1,4 +1,4 @@
-package com.anandnet.harmonymusic
+package com.northabyss.harmonymusic
 
 import android.os.Build
 import androidx.annotation.Keep

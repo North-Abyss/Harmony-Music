@@ -860,14 +860,16 @@ Widget radioWidget(
             Navigator.of(Get.context!).pop();
           }
         },
-        leading: Radio(
-            value: value,
+        leading: RadioGroup(
             groupValue: value.runtimeType == ThemeType
                 ? controller.themeModetype.value
                 : controller.discoverContentType.value,
             onChanged: value.runtimeType == ThemeType
                 ? controller.onThemeChange
-                : controller.onContentChange),
+                : controller.onContentChange,
+            child: Radio(
+                value: value),
+        ),
         title: Text(label),
       ));
 }
