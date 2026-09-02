@@ -132,9 +132,8 @@ jobs:
           # Copy EXE from flutter_distributor output
           Get-ChildItem -Path dist -Recurse -Filter *.exe | Copy-Item -Destination dist
           
-          # Continue building the ZIP as a fallback
-          flutter build windows --release
-          if ($LASTEXITCODE -ne 0) { throw "Flutter build failed with exit code $LASTEXITCODE" }
+          # Compress the already built release directory as a fallback zip
+
           $releaseDir = "build\windows\x64\runner\Release"
           if (Test-Path $releaseDir) {
             Compress-Archive -Path "$releaseDir\*" -DestinationPath dist\harmonymusic-windows.zip
