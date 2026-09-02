@@ -56,8 +56,18 @@ add_subdirectory("runner")
 
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
+# Fix for CMake 3.30+ libarchive symlink extraction bug in GitHub Actions
+if(WIN32)
+    file(GLOB plugin_symlinks "${CMAKE_CURRENT_SOURCE_DIR}/flutter/ephemeral/.plugin_symlinks/*")
+    foreach(symlink IN LISTS plugin_symlinks)
+        if(IS_SYMLINK "${symlink}")
+            get_filename_component(target "${symlink}" REALPATH)
+            execute_process(COMMAND cmd /c rmdir "${symlink}")
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory "${target}" "${symlink}")
+        endif()
+    endforeach()
+endif()
 include(flutter/generated_plugins.cmake)
-
 
 # === Installation ===
 # Support files are copied into place next to the executable, so that it can
