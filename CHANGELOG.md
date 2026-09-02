@@ -1,3 +1,8 @@
+# 1.13.1
+* Fixed a bug where offline (downloaded) local files crashed when accidentally routed through LocalProxy
+* Resolved an infinite 403 Forbidden auto-reload loop where media_kit immediately aborted freshly-fetched streams
+* Introduced a robust auto-reload streaming fallback that automatically retries (up to 10 times) with a 1-second delay for stability
+
 # 1.13.0
 * Added a fully native QR Code Scanner using hardware cameras
 * Added "Scan from Image File" fallback for Linux desktops lacking webcam drivers

@@ -517,7 +517,7 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
         }
 
         final positionMs = extras['position'] ?? 0;
-        await _player.seek(Duration(milliseconds: positionMs), index: 0);
+        await _player.seek(positionMs > 0 ? Duration(milliseconds: positionMs) : null, index: 0);
         if (!GetPlatform.isDesktop && positionMs > 0) {
           await _player.seek(Duration(milliseconds: positionMs), index: 0);
         }
