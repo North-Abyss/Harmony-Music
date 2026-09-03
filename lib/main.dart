@@ -119,6 +119,11 @@ initHive() async {
 
 void _setAppInitPrefs() {
   final appPrefs = Hive.box("AppPrefs");
+  if (appPrefs.get('cacheCleared_v2') != true) {
+    Hive.box('SongsUrlCache').clear();
+    appPrefs.put('cacheCleared_v2', true);
+  }
+  
   if (appPrefs.isEmpty) {
     appPrefs.putAll({
       'themeModeType': 0,

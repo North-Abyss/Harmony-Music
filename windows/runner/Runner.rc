@@ -93,7 +93,7 @@ BEGIN
             VALUE "FileDescription", "harmonymusic" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "harmonymusic" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024 anandnet (Original), North-Abyss (Modifications). All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2024 northabyss (Original), North-Abyss (Modifications). All rights reserved." "\0"
             VALUE "OriginalFilename", "harmonymusic.exe" "\0"
             VALUE "ProductName", "harmonymusic" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

@@ -10,7 +10,7 @@ This document acts as the primary Agent Database and Context Memory for AI agent
 - **Dart Package Name**: `harmonymusic`
 - **App ID / Bundle Identifier**: `com.northabyss.harmonymusic`
 - **Version**: 1.13.0
-- **Forked From**: [anandnet/Harmony-Music](https://github.com/anandnet/Harmony-Music)
+- **Forked From**: [northabyss/Harmony-Music](https://github.com/northabyss/Harmony-Music)
 - **Maintained By**: [North-Abyss/Harmony-Music](https://github.com/North-Abyss/Harmony-Music)
 - **Goal**: Develop and actively maintain the Harmony Music cross-platform music streaming app, adding new features and fixing legacy bugs.
 - **Framework**: Flutter (Dart SDK >=3.1.5 <4.0.0)

@@ -14,19 +14,17 @@ import 'package:audio_service/audio_service.dart';
 // ignore: depend_on_referenced_packages
 import 'package:rxdart/rxdart.dart';
 
-
-import '../utils/helper.dart';
-import 'local_proxy.dart';
-
-import '../models/album.dart';
+import '/models/album.dart';
 import '../models/playlist.dart';
-import 'equalizer.dart';
-import 'stream_service.dart';
-import '../models/hm_streaming_data.dart';
-import '../ui/player/player_controller.dart';
+import '/services/equalizer.dart';
+import '/services/stream_service.dart';
+import '/models/hm_streaming_data.dart';
+import '/ui/player/player_controller.dart';
+import '/services/local_proxy.dart';
 import '../ui/screens/Home/home_screen_controller.dart';
-import 'background_task.dart';
-import 'permission_service.dart';
+import '/services/background_task.dart';
+import '/services/permission_service.dart';
+import '../utils/helper.dart';
 import '/models/media_Item_builder.dart';
 import '/services/utils.dart';
 import '../ui/screens/Settings/settings_screen_controller.dart';
@@ -58,7 +56,6 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
   late String? currentSongUrl;
   bool isPlayingUsingLockCachingSource = false;
   bool loopModeEnabled = false;
-  int _retryCount = 0;
   bool queueLoopModeEnabled = false;
   bool shuffleModeEnabled = false;
   bool loudnessNormalizationEnabled = false;
@@ -130,9 +127,6 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
 
   void _notifyAudioHandlerAboutPlaybackEvents() {
     _player.playbackEventStream.listen((PlaybackEvent event) {
-      if (_player.processingState == ProcessingState.ready) {
-        _retryCount = 0;
-      }
       final playing = _player.playing;
       playbackState.add(playbackState.value.copyWith(
         controls: [
@@ -176,6 +170,7 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
       } else {
         printERROR('An error occurred: $e');
         Duration curPos = _player.position;
+        await _player.stop();
 
         if (isPlayingUsingLockCachingSource &&
             e.toString().contains("Connection closed while receiving data")) {
@@ -184,25 +179,18 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
           return;
         }
 
-        if (_retryCount >= 10) {
-           printERROR("Auto-reload failed after 10 retries.");
-           _retryCount = 0;
-           return;
-        }
-        _retryCount++;
-        printINFO("Retrying auto-reload ($_retryCount/10)...");
-
         //Workaround when 403 error encountered
-        try {
-          await Future.delayed(const Duration(milliseconds: 1000));
-          await customAction("playByIndex", {
-            'index': currentIndex,
-            'newUrl': true,
-            'position': curPos.inMilliseconds
-          });
-        } catch (err) {
-          printERROR("Auto-reload failed: $err");
-        }
+        // customAction("playByIndex", {'index': currentIndex, 'newUrl': true})
+        //     .whenComplete(() async {
+        //   await _player.stop();
+        //   if (currentSongUrl == null) {
+        //     networkErrorPause = true;
+        //   } else {
+        //     _player.play();
+        //   }
+        // });
+        customAction("playByIndex", {'index': currentIndex, 'newUrl': true});
+        await _player.seek(curPos, index: 0);
       }
     });
   }
@@ -290,9 +278,16 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
   }
 
   AudioSource _createAudioSource(MediaItem mediaItem) {
-    final url = mediaItem.extras!['url'] as String;
+    final originalUrl = mediaItem.extras!['url'] as String;
     final streamHeaders = (mediaItem.extras!['streamHeaders'] as Map?)?.cast<String, String>();
-    if (url.contains('/cache') ||
+    
+    // Always route through proxy if it's an http/https link to attach headers properly
+    // This uses our LocalProxy which MPV handles better than just_audio's built-in proxy.
+    final url = originalUrl.startsWith('http') 
+        ? LocalProxy.addUrl(originalUrl, headers: streamHeaders) 
+        : originalUrl;
+
+    if (originalUrl.contains('/cache') ||
         (Get.find<SettingsScreenController>().cacheSongs.isTrue &&
             url.contains("http"))) {
       printINFO("Playing Using LockCaching");
@@ -307,19 +302,11 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
 
     printINFO("Playing Using AudioSource.uri");
     isPlayingUsingLockCachingSource = false;
-    
-    Uri uri = Uri.tryParse(url)!;
-    if (url.startsWith('/') || url.startsWith('file://')) {
-       final path = url.replaceFirst('file://', '');
-       return AudioSource.uri(Uri.parse(path), tag: mediaItem);
-    }
-    
-    // Use local proxy to prevent MPV from invoking ytdl_hook
-    final proxyUrl = LocalProxy.addUrl(uri.toString(), headers: streamHeaders);
-    
     return AudioSource.uri(
-      Uri.parse(proxyUrl),
-      // We no longer need to pass headers to MPV because the local proxy handles them
+      Uri.tryParse(url)!,
+      // Passing headers: null prevents just_audio from starting its own internal proxy, 
+      // allowing MPV to connect directly to our LocalProxy.
+      headers: null, 
       tag: mediaItem,
     );
   }
@@ -516,13 +503,22 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
           _normalizeVolume(streamInfo.audio!.loudnessDb);
         }
 
-        final positionMs = extras['position'] ?? 0;
-        await _player.seek(positionMs > 0 ? Duration(milliseconds: positionMs) : null, index: 0);
-        if (!GetPlatform.isDesktop && positionMs > 0) {
-          await _player.seek(Duration(milliseconds: positionMs), index: 0);
-        }
-
-        if (!restoreSession) {
+        if (restoreSession) {
+          if (!GetPlatform.isDesktop) {
+            final position = extras['position'];
+            await _player.load();
+            await _player.seek(
+              Duration(
+                milliseconds: position,
+              ),
+            );
+            await _player.seek(
+              Duration(
+                milliseconds: position,
+              ),
+            );
+          }
+        } else {
           await _player.play();
         }
         break;
@@ -803,7 +799,7 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
       final streamInfo = Hive.box("SongsCache").get(songId)["streamInfo"];
       Audio? cacheAudioPlaceholder;
       if (streamInfo != null && streamInfo.isNotEmpty) {
-        streamInfo[1]['url'] = "$_cacheDir/cachedSongs/$songId.mp3";
+        streamInfo[1]['url'] = "file://$_cacheDir/cachedSongs/$songId.mp3";
         cacheAudioPlaceholder = Audio.fromJson(streamInfo[1]);
       } else {
         cacheAudioPlaceholder = Audio(
@@ -812,7 +808,7 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
             loudnessDb: 0,
             duration: 0,
             size: 0,
-            url: "$_cacheDir/cachedSongs/$songId.mp3",
+            url: "file://$_cacheDir/cachedSongs/$songId.mp3",
             itag: 0);
       }
 
@@ -864,6 +860,7 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
       if (songsUrlCacheBox.containsKey(songId) && !generateNewUrl) {
         final streamInfoJson = songsUrlCacheBox.get(songId);
         if (streamInfoJson.runtimeType.toString().contains("Map") &&
+            streamInfoJson.containsKey('streamHeaders') &&
             !isExpired(url: (streamInfoJson['lowQualityAudio']['url']))) {
           printINFO("Got cached Url ($songId)");
           streamInfo = HMStreamingData.fromJson(streamInfoJson);
@@ -872,8 +869,14 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
 
       if (streamInfo == null) {
         final token = RootIsolateToken.instance;
-        final streamInfoJson =
-            await Isolate.run(() => getStreamInfo(songId, token));
+        Map<String, dynamic>? streamInfoJson;
+        try {
+          streamInfoJson =
+              await Isolate.run(() => getStreamInfo(songId, token));
+        } catch (e) {
+          printINFO("Isolate error (likely Hot Reload issue): \$e");
+          streamInfoJson = await getStreamInfo(songId, token);
+        }
         streamInfo = HMStreamingData.fromJson(streamInfoJson);
         if (streamInfo.playable) songsUrlCacheBox.put(songId, streamInfoJson);
       }

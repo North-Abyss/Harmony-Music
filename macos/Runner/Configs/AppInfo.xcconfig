@@ -11,4 +11,4 @@ PRODUCT_NAME = harmonymusic
 PRODUCT_BUNDLE_IDENTIFIER = com.northabyss.harmonymusic
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2024 anandnet (Original), North-Abyss (Modifications). All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2024 northabyss (Original), North-Abyss (Modifications). All rights reserved.

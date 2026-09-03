@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:harmonymusic/utils/helper.dart';
+import 'package:hive/hive.dart';
 
 class StreamProvider {
   final bool playable;
@@ -24,63 +25,54 @@ class StreamProvider {
     }
     
     String lastStatusMsg = "Unknown error occurred";
+    final appPrefsBox = Hive.box('AppPrefs');
+    final visitorData = appPrefsBox.get("visitorId");
+    final visitorId = visitorData != null ? visitorData['id'] : '';
 
-    // Attempt 1: IOS Client
-    // Known to bypass many music streaming restrictions.
-    final iosRes = await _fetchInnerTube(
+    // Attempt 1: TV_EMBEDDED Client
+    // Currently the most reliable bypass for bot detection (yt-dlp recommended)
+    final tvRes = await _fetchInnerTube(
       videoId: cleanId,
-      clientName: 'IOS',
-      clientVersion: '19.43.2',
-      userAgent: 'com.google.ios.youtube/19.43.2 (iPhone16,2; U; CPU iOS 18_1 like Mac OS X;)',
-      clientId: '5',
+      clientName: 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
+      clientVersion: '2.0',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+      clientId: '85',
+      visitorId: visitorId,
     );
-    if (iosRes != null) {
-      if (iosRes.playable) return iosRes;
-      lastStatusMsg = iosRes.statusMSG;
+    if (tvRes != null) {
+      if (tvRes.playable) return tvRes;
+      lastStatusMsg = tvRes.statusMSG;
     }
 
-    // Attempt 2: ANDROID Client
+    // Attempt 2: WEB_EMBEDDED Client
+    final webRes = await _fetchInnerTube(
+      videoId: cleanId,
+      clientName: 'WEB_EMBEDDED',
+      clientVersion: '1.20240104.01.00',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      clientId: '56',
+      visitorId: visitorId,
+    );
+    if (webRes != null) {
+      if (webRes.playable) return webRes;
+      lastStatusMsg = webRes.statusMSG;
+    }
+
+    // Attempt 3: ANDROID Client
     final androidRes = await _fetchInnerTube(
       videoId: cleanId,
       clientName: 'ANDROID',
       clientVersion: '20.10.38',
       userAgent: 'com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip',
       clientId: '3',
+      visitorId: visitorId,
     );
     if (androidRes != null) {
       if (androidRes.playable) return androidRes;
       lastStatusMsg = androidRes.statusMSG;
     }
 
-    // Attempt 3: ANDROID_VR Client (Oculus Quest 3)
-    final androidVrRes = await _fetchInnerTube(
-      videoId: cleanId,
-      clientName: 'ANDROID_VR',
-      clientVersion: '1.61.48',
-      userAgent:
-          'com.google.android.apps.youtube.vr.oculus/1.61.48 (Linux; U; Android 12; en_US; Oculus Quest 3; Build/SQ3A.220605.009.A1; Cronet/132.0.6808.3)',
-      clientId: '28',
-    );
-    if (androidVrRes != null) {
-      if (androidVrRes.playable) return androidVrRes;
-      lastStatusMsg = androidVrRes.statusMSG;
-    }
-
-    // Attempt 4: VISIONOS Client
-    final visionOsRes = await _fetchInnerTube(
-      videoId: cleanId,
-      clientName: 'VISIONOS',
-      clientVersion: '1.02',
-      userAgent:
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 15_7_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15',
-      clientId: '101',
-    );
-    if (visionOsRes != null) {
-      if (visionOsRes.playable) return visionOsRes;
-      lastStatusMsg = visionOsRes.statusMSG;
-    }
-
-    // Attempt 5: youtube_explode_dart (Original Fallback)
+    // Attempt 4: youtube_explode_dart (Upgraded to v3)
     final yt = YoutubeExplode();
     try {
       final res = await yt.videos.streamsClient.getManifest(cleanId);
@@ -94,29 +86,60 @@ class StreamProvider {
                   audioCodec:
                       e.audioCodec.contains('mp') ? Codec.mp4a : Codec.opus,
                   bitrate: e.bitrate.bitsPerSecond,
-                  duration: e.duration ?? 0,
-                  loudnessDb: e.loudnessDb,
+                  duration: 0,
+                  loudnessDb: 0.0,
                   url: e.url.toString(),
                   size: e.size.totalBytes,
                 ))
             .toList(),
+        streamHeaders: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Referer': 'https://www.youtube.com/',
+        },
       );
     } catch (e) {
-      if (e is SocketException) {
-        return StreamProvider(playable: false, statusMSG: "networkError");
-      } else if (e is VideoUnplayableException) {
-        // Fallback to our lastStatusMsg if youtube_explode throws an unplayable error
-        return StreamProvider(playable: false, statusMSG: lastStatusMsg != "Unknown error occurred" ? lastStatusMsg : (e.message.split('\n').firstOrNull ?? "Song is unplayable"));
-      } else if (e is VideoRequiresPurchaseException) {
-        return StreamProvider(playable: false, statusMSG: "Song requires purchase");
-      } else if (e is VideoUnavailableException) {
-        return StreamProvider(playable: false, statusMSG: "Song is unavailable");
-      } else if (e is YoutubeExplodeException) {
-        return StreamProvider(playable: false, statusMSG: e.message);
-      } else {
-        return StreamProvider(playable: false, statusMSG: lastStatusMsg);
-      }
+      printINFO("YoutubeExplode Error: $e");
+      lastStatusMsg = "YT_Explode: ${e.toString().split('\\n').first}";
     }
+
+    // Attempt 5: Piped API Fallback
+    try {
+      final piped = appPrefsBox.get('piped');
+      final pipedUrl = (piped != null && piped['instApiUrl'] != null && piped['instApiUrl'].isNotEmpty) 
+          ? piped['instApiUrl'] 
+          : "https://pipedapi.kavin.rocks";
+      
+      final request = await HttpClient().getUrl(Uri.parse('$pipedUrl/streams/$cleanId'));
+      final response = await request.close();
+      if (response.statusCode == 200) {
+        final bodyString = await response.transform(utf8.decoder).join();
+        final data = jsonDecode(bodyString);
+        final audioStreams = data['audioStreams'] as List;
+        if (audioStreams.isNotEmpty) {
+           return StreamProvider(
+             playable: true,
+             statusMSG: "OK",
+             audioFormats: audioStreams.map((e) => Audio(
+                itag: int.tryParse(e['itag'].toString()) ?? 0,
+                audioCodec: e['codec'].toString().contains('mp') ? Codec.mp4a : Codec.opus,
+                bitrate: e['bitrate'] ?? 0,
+                duration: 0,
+                loudnessDb: 0.0,
+                url: e['url'] ?? '',
+                size: e['contentLength'] ?? 0,
+             )).toList(),
+             streamHeaders: null,
+           );
+        }
+      } else {
+        printINFO("Piped HTTP Error: ${response.statusCode}");
+      }
+    } catch(e) {
+      printINFO("Piped API Error: $e");
+    }
+
+    return StreamProvider(playable: false, statusMSG: lastStatusMsg);
+
   }
 
   static Future<StreamProvider?> _fetchInnerTube({
@@ -125,6 +148,7 @@ class StreamProvider {
     required String clientVersion,
     required String userAgent,
     required String clientId,
+    required String visitorId,
   }) async {
     try {
       final httpClient = HttpClient();
@@ -135,6 +159,9 @@ class StreamProvider {
       request.headers.set('X-YouTube-Client-Name', clientId);
       request.headers.set('X-YouTube-Client-Version', clientVersion);
       request.headers.set('User-Agent', userAgent);
+      if (visitorId.isNotEmpty) {
+        request.headers.set('X-Goog-Visitor-Id', visitorId);
+      }
 
       final payload = {
         'context': {
