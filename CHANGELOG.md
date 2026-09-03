@@ -1,3 +1,11 @@
+# 1.13.3
+* Upgraded `youtube_explode_dart` to v3.1.0 to bypass latest YouTube bot detection protocols.
+* Replaced deprecated InnerTube streaming clients with reliable `TV_EMBEDDED` and `WEB_EMBEDDED` clients.
+* Added support for `visitorData` propagation to prevent 403 Forbidden checks.
+* Integrated Piped API as an ultimate stream extraction fallback.
+* Added one-time cache invalidation on startup to clear dead URL proxies.
+* Gracefully handled background Isolate crashes caused by Hot Reloads.
+
 # 1.13.1
 * Fixed a bug where offline (downloaded) local files crashed when accidentally routed through LocalProxy
 * Resolved an infinite 403 Forbidden auto-reload loop where media_kit immediately aborted freshly-fetched streams
