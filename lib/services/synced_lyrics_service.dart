@@ -13,24 +13,52 @@ class SyncedLyricsService {
     }
 
     final dur = song.duration?.inSeconds ?? durInSec;
-    final url =
-        'https://lrclib.net/api/get?artist_name=${song.artist?.replaceAll(" ", "+")}&track_name=${song.title.replaceAll(" ", "+")}&album_name=${song.album?.replaceAll(" ", "+")}&duration=$dur';
+    
+    // Attempt 1: Exact match using GET (requires valid duration)
+    if (dur > 0 && dur <= 3600) {
+      final getUrl =
+          'https://lrclib.net/api/get?artist_name=${song.artist?.replaceAll(" ", "+")}&track_name=${song.title.replaceAll(" ", "+")}&album_name=${song.album?.replaceAll(" ", "+")}&duration=$dur';
+      try {
+        final response = (await Dio().get(getUrl)).data;
+        if (response["syncedLyrics"] != null) {
+          printINFO("Synced Available (Exact Match)");
+          final lyricsData = {
+            "synced": response["syncedLyrics"],
+            "plainLyrics": response["plainLyrics"] ?? ""
+          };
+          await lyricsBox.put(song.id, lyricsData);
+          await lyricsBox.close();
+          return lyricsData;
+        }
+      } catch (e) {
+        printERROR("Exact match failed, falling back to search...");
+      }
+    }
+
+    // Attempt 2: Fuzzy match using SEARCH
+    final searchUrl = 
+        'https://lrclib.net/api/search?q=${song.title.replaceAll(" ", "+")}+${song.artist?.replaceAll(" ", "+")}';
     try {
-      final response = (await Dio().get(url)).data;
-      if (response["syncedLyrics"] != null) {
-        printINFO("Synced Available");
-        final lyricsData = {
-          "synced": response["syncedLyrics"],
-          "plainLyrics": response["plainLyrics"]
-        };
-        await lyricsBox.put(song.id, lyricsData);
-        return lyricsData;
+      final response = (await Dio().get(searchUrl)).data as List;
+      if (response.isNotEmpty) {
+        final firstMatch = response.first;
+        if (firstMatch["syncedLyrics"] != null || firstMatch["plainLyrics"] != null) {
+          printINFO("Synced Available (Search Match)");
+          final lyricsData = {
+            "synced": firstMatch["syncedLyrics"] ?? "",
+            "plainLyrics": firstMatch["plainLyrics"] ?? ""
+          };
+          await lyricsBox.put(song.id, lyricsData);
+          await lyricsBox.close();
+          return lyricsData;
+        }
       }
     } on DioException catch (e) {
       printERROR(e.response);
     } finally {
-      await lyricsBox.close();
+      if (lyricsBox.isOpen) await lyricsBox.close();
     }
+    
     return null;
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harmonymusic/ui/screens/Home/home_screen_controller.dart';
-import 'package:sidebar_with_animation/animated_side_bar.dart';
+import 'sidebar_with_animation.dart';
 
 class SideNavBar extends StatelessWidget {
   const SideNavBar({super.key});

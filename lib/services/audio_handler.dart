@@ -61,21 +61,23 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
   bool loudnessNormalizationEnabled = false;
   // var networkErrorPause = false;
   bool isSongLoading = true;
+  int _playSessionId = 0;
 
   // list of shuffled queue songs ids
   List<String> shuffledQueue = [];
 
-  final _playList =
-      ConcatenatingAudioSource(children: [], useLazyPreparation: false);
+
 
   MyAudioHandler() {
     if (GetPlatform.isWindows || GetPlatform.isLinux) {
       JustAudioMediaKit.title = 'Harmony music';
       JustAudioMediaKit.protocolWhitelist = const ['http', 'https', 'file'];
+      JustAudioMediaKit.ensureInitialized(linux: true, windows: true);
     }
     _mediaLibrary = MediaLibrary();
     _player = AudioPlayer(
-        audioLoadConfiguration: const AudioLoadConfiguration(
+      useProxyForRequestHeaders: false,
+      audioLoadConfiguration: const AudioLoadConfiguration(
             androidLoadControl: AndroidLoadControl(
       minBufferDuration: Duration(seconds: 50),
       maxBufferDuration: Duration(seconds: 120),
@@ -83,7 +85,6 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
       bufferForPlaybackAfterRebufferDuration: Duration(seconds: 2),
     )));
     _createCacheDir();
-    _addEmptyList();
     _notifyAudioHandlerAboutPlaybackEvents();
     _listenToPlaybackForNextSong();
     _listenForSequenceStateChanges();
@@ -106,14 +107,6 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
     _cacheDir = (await getTemporaryDirectory()).path;
     if (!Directory("$_cacheDir/cachedSongs/").existsSync()) {
       Directory("$_cacheDir/cachedSongs/").createSync(recursive: true);
-    }
-  }
-
-  void _addEmptyList() {
-    try {
-      _player.setAudioSource(_playList);
-    } catch (r) {
-      printERROR(r.toString());
     }
   }
 
@@ -281,15 +274,18 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
     final originalUrl = mediaItem.extras!['url'] as String;
     final streamHeaders = (mediaItem.extras!['streamHeaders'] as Map?)?.cast<String, String>();
     
-    // Always route through proxy if it's an http/https link to attach headers properly
-    // This uses our LocalProxy which MPV handles better than just_audio's built-in proxy.
-    final url = originalUrl.startsWith('http') 
-        ? LocalProxy.addUrl(originalUrl, headers: streamHeaders) 
-        : originalUrl;
+    // YouTube now strictly checks User-Agent which MPV/media_kit strips.
+    // So we use LocalProxy on ALL platforms to guarantee header injection.
+    final isDesktop = GetPlatform.isWindows || GetPlatform.isLinux || GetPlatform.isMacOS;
+    final url = (!originalUrl.startsWith('http'))
+        ? originalUrl 
+        : LocalProxy.addUrl(originalUrl, headers: streamHeaders);
 
-    if (originalUrl.contains('/cache') ||
+    // LockCachingAudioSource is broken on just_audio_media_kit (it ignores cache and drops headers).
+    // So we disable it on Desktop.
+    if (!isDesktop && (originalUrl.contains('/cache') ||
         (Get.find<SettingsScreenController>().cacheSongs.isTrue &&
-            url.contains("http"))) {
+            url.contains("http")))) {
       printINFO("Playing Using LockCaching");
       isPlayingUsingLockCachingSource = true;
       // ignore: experimental_member_use
@@ -302,11 +298,15 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
 
     printINFO("Playing Using AudioSource.uri");
     isPlayingUsingLockCachingSource = false;
+    
+    // If it's a local file path, use Uri.file to prevent spaces from being converted to %20
+    final uri = url.startsWith('http') 
+        ? Uri.tryParse(url)! 
+        : (url.startsWith('file://') ? Uri.parse(url) : Uri.file(url));
+
     return AudioSource.uri(
-      Uri.tryParse(url)!,
-      // Passing headers: null prevents just_audio from starting its own internal proxy, 
-      // allowing MPV to connect directly to our LocalProxy.
-      headers: null, 
+      uri,
+      headers: isDesktop ? streamHeaders : null, 
       tag: mediaItem,
     );
   }
@@ -468,19 +468,22 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
         currentIndex = songIndex;
         final isNewUrlReq = extras['newUrl'] ?? false;
         final currentSong = queue.value[currentIndex];
-        final futureStreamInfo =
-            checkNGetUrl(currentSong.id, generateNewUrl: isNewUrlReq);
-        final bool restoreSession = extras['restoreSession'] ?? false;
+        final currentSession = ++_playSessionId;
         isSongLoading = true;
         playbackState.add(playbackState.value
             .copyWith(processingState: AudioProcessingState.loading));
-        if (_playList.children.isNotEmpty) {
-          await _playList.clear();
-        }
+        
+        // Stop playing the old song immediately while loading the new one
+        await _player.pause();
+
+        final futureStreamInfo =
+            checkNGetUrl(currentSong.id, generateNewUrl: isNewUrlReq);
+        final bool restoreSession = extras['restoreSession'] ?? false;
+
 
         mediaItem.add(currentSong);
         final streamInfo = await futureStreamInfo;
-        if (songIndex != currentIndex) {
+        if (songIndex != currentIndex || currentSession != _playSessionId) {
           return;
         } else if (!streamInfo.playable) {
           currentSongUrl = null;
@@ -496,7 +499,7 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
         currentSong.extras!['streamHeaders'] = streamInfo.streamHeaders;
         playbackState
             .add(playbackState.value.copyWith(queueIndex: currentIndex));
-        await _playList.add(_createAudioSource(currentSong));
+        await _player.setAudioSource(_createAudioSource(currentSong));
 
         isSongLoading = false;
         if (loudnessNormalizationEnabled && GetPlatform.isAndroid) {
@@ -557,13 +560,21 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
 
       case 'setSourceNPlay':
         final currMed = (extras!['mediaItem'] as MediaItem);
-        final futureStreamInfo = checkNGetUrl(currMed.id);
+        final currentSession = ++_playSessionId;
         isSongLoading = true;
         currentIndex = 0;
-        await _playList.clear();
+        
+        // Stop playing the old song immediately while loading the new one
+        await _player.pause();
+
+        final futureStreamInfo = checkNGetUrl(currMed.id);
+
         mediaItem.add(currMed);
         queue.add([currMed]);
         final streamInfo = (await futureStreamInfo);
+        if (currentSession != _playSessionId) {
+          return;
+        }
         if (!streamInfo.playable) {
           currentSongUrl = null;
           isSongLoading = false;
@@ -575,7 +586,7 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
         currentSongUrl = currMed.extras!['url'] = streamInfo.audio!.url;
         currMed.extras!['streamHeaders'] = streamInfo.streamHeaders;
 
-        await _playList.add(_createAudioSource(currMed));
+        await _player.setAudioSource(_createAudioSource(currMed));
         isSongLoading = false;
 
         // Normalize audio
@@ -841,15 +852,22 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
           highQualityAudio: audio,
           lowQualityAudio: audio);
 
+      bool fileExists = false;
       if (path.contains(
           "${Get.find<SettingsScreenController>().supportDirPath}/Music")) {
+        fileExists = await File(path).exists();
+      } else {
+        //check file access and if file exist in storage
+        final status = await PermissionService.getExtStoragePermission();
+        if (status) {
+          fileExists = await File(path).exists();
+        }
+      }
+
+      if (fileExists) {
         return streamInfo;
       }
-      //check file access and if file exist in storage
-      final status = await PermissionService.getExtStoragePermission();
-      if (status && await File(path).exists()) {
-        return streamInfo;
-      }
+      
       //in case file doesnot found in storage, song will be played online
       return checkNGetUrl(songId, offlineReplacementUrl: true);
     } else {

@@ -1,4 +1,4 @@
-# Harmony Music V1.13.3 Hotfix 🎵
+# Harmony Music V1.13.2 Hotfix 🎵
 We are pushing a critical hotfix to resolve the widespread "403 Forbidden" and "Sign in to confirm you're not a bot" errors caused by recent YouTube API changes, ensuring uninterrupted music playback!
 
 ### 🐛 Bug Fixes & Stability

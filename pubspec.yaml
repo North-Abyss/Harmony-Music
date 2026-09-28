@@ -15,8 +15,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
-# of the product and file versions while build-number is used as the build suffix.
-version: 1.13.2+32
+version: 1.13.3+1
 
 environment:
   sdk: ">=3.1.5 <4.0.0"
@@ -50,11 +49,9 @@ dependencies:
   hive_flutter: ^1.1.0
   html: ^0.15.6
   jni: ^0.14.0
-  just_audio: ^0.9.46
-  just_audio_media_kit:
-    git:
-      url: https://github.com/anandnet/just_audio_media_kit.git
-      ref: 6672eb82657d9e671abbf42122031c88aa9e6d80
+  just_audio: ^0.10.6
+  just_audio_media_kit: ^2.1.0
+  media_kit_libs_linux: ^1.2.0
   palette_generator: ^0.3.3+4
   path: ^1.8.3
   path_provider: ^2.1.1
@@ -79,13 +76,17 @@ dependencies:
   url_launcher: ^6.2.1
   widget_marquee: ^0.0.8
   window_manager: ^0.4.2
-  youtube_explode_dart: ^3.1.0
+  youtube_explode_dart:
+    git:
+      url: https://github.com/its-ashutosh-pathak/youtube_explode_dart.git
+      ref: fix-visionos-403
   qr_flutter: ^4.1.0
   flutter_zxing: ^2.3.0
   camera: ^0.12.0+1
   camera_linux: ^0.0.8
   flutter_distributor: ^0.0.2
   http: ^1.6.0
+  flutter_js: ^0.8.7
 dev_dependencies:
 
   # The "flutter_lints" package below contains a set of recommended lints to

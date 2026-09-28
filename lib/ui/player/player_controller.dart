@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter_lyric/lyric_ui/lyric_ui.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_lyric/lyric_ui/ui_netease.dart';
 import 'package:hive/hive.dart';
 import 'package:get/get.dart';
 import '../navigator.dart';
@@ -72,7 +72,7 @@ class PlayerController extends GetxController
   // 0 for play, 1 for pause, 2 for blank
   final gesturePlayerVisibleState = 2.obs;
   final lyricUi =
-      UINetease(highlight: true, defaultSize: 20, defaultExtSize: 12);
+      HarmonyLyricUI(highlight: true, defaultSize: 20, defaultExtSize: 12);
   RxMap<String, dynamic> lyrics =
       <String, dynamic>{"synced": "", "plainLyrics": ""}.obs;
   ScrollController scrollController = ScrollController();
@@ -950,6 +950,9 @@ class PlayerController extends GetxController
           isLyricsLoading.value = false;
           return;
         }
+        
+        // --- YouTube Fallback Commented Out ---
+        /*
         final related = await _musicServices.getWatchPlaylist(
             videoId: currentSong.value!.id, onlyRelated: true);
         final relatedLyricsId = related['lyrics'];
@@ -959,6 +962,10 @@ class PlayerController extends GetxController
         } else {
           lyrics.value = {"synced": "", "plainLyrics": "NA"};
         }
+        */
+        
+        // If not found in lrclib, just set to NA
+        lyrics.value = {"synced": "", "plainLyrics": "NA"};
       } catch (e) {
         lyrics.value = {"synced": "", "plainLyrics": "NA"};
       }
@@ -977,6 +984,9 @@ class PlayerController extends GetxController
         isLyricsLoading.value = false;
         return;
       }
+      
+      // --- YouTube Fallback Commented Out ---
+      /*
       final related = await _musicServices.getWatchPlaylist(
           videoId: currentSong.value!.id, onlyRelated: true);
       final relatedLyricsId = related['lyrics'];
@@ -986,6 +996,10 @@ class PlayerController extends GetxController
       } else {
         lyrics.value = {"synced": "", "plainLyrics": "NA"};
       }
+      */
+      
+      // If not found in lrclib, just set to NA
+      lyrics.value = {"synced": "", "plainLyrics": "NA"};
     } catch (e) {
       lyrics.value = {"synced": "", "plainLyrics": "NA"};
     }
@@ -1094,3 +1108,71 @@ class PlayerController extends GetxController
 }
 
 enum PlayButtonState { paused, playing, loading }
+
+class HarmonyLyricUI extends LyricUI {
+  final double defaultSize;
+  final double defaultExtSize;
+  final double otherMainSize;
+  final double bias;
+  final double lineGap;
+  final double inlineGap;
+  final LyricAlign lyricAlign;
+  final LyricBaseLine lyricBaseLine;
+  final bool highlight;
+  final HighlightDirection highlightDirection;
+
+  HarmonyLyricUI({
+    this.defaultSize = 20,
+    this.defaultExtSize = 12,
+    this.otherMainSize = 16,
+    this.bias = 0.5,
+    this.lineGap = 25,
+    this.inlineGap = 25,
+    this.lyricAlign = LyricAlign.CENTER,
+    this.lyricBaseLine = LyricBaseLine.CENTER,
+    this.highlight = true,
+    this.highlightDirection = HighlightDirection.LTR,
+  });
+
+  @override
+  TextStyle getPlayingExtTextStyle() =>
+      TextStyle(color: Colors.grey[300], fontSize: defaultExtSize);
+
+  @override
+  TextStyle getOtherExtTextStyle() => TextStyle(
+        color: Colors.grey[300],
+        fontSize: defaultExtSize,
+      );
+
+  @override
+  TextStyle getOtherMainTextStyle() =>
+      TextStyle(color: Colors.grey[200], fontSize: otherMainSize);
+
+  @override
+  TextStyle getPlayingMainTextStyle() => TextStyle(
+        color: Colors.white,
+        fontSize: defaultSize,
+        fontWeight: FontWeight.bold, // BOLD ACTIVE LYRIC
+      );
+
+  @override
+  double getInlineSpace() => inlineGap;
+
+  @override
+  double getLineSpace() => lineGap;
+
+  @override
+  double getPlayingLineBias() => bias;
+
+  @override
+  LyricAlign getLyricHorizontalAlign() => lyricAlign;
+
+  @override
+  LyricBaseLine getBiasBaseLine() => lyricBaseLine;
+
+  @override
+  bool enableHighlight() => highlight;
+
+  @override
+  HighlightDirection getHighlightDirection() => highlightDirection;
+}

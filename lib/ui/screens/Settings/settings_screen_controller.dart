@@ -101,7 +101,7 @@ class SettingsScreenController extends GetxController {
         setBox.get("restrorePlaybackSession") ?? false;
     cacheHomeScreenData.value = setBox.get("cacheHomeScreenData") ?? true;
     streamingQuality.value =
-        AudioQuality.values[setBox.get('streamingQuality')];
+        AudioQuality.values[setBox.get('streamingQuality') ?? 1];
     playerUi.value = isDesktop ? 0 : (setBox.get('playerUi') ?? 0);
     backgroundPlayEnabled.value = setBox.get("backgroundPlayEnabled") ?? true;
     keepScreenAwake.value =

@@ -29,8 +29,86 @@ class StreamProvider {
     final visitorData = appPrefsBox.get("visitorId");
     final visitorId = visitorData != null ? visitorData['id'] : '';
 
+    // Phase 1: Piped API Fallback (Multiple instances)
+    final pipedInstances = [
+      "https://pipedapi.kavin.rocks",
+      "https://pipedapi.adminforge.de",
+      "https://pipedapi.moomoo.me",
+      "https://piped-api.lunar.icu",
+    ];
+
+    final piped = appPrefsBox.get('piped');
+    if (piped != null && piped['instApiUrl'] != null && piped['instApiUrl'].isNotEmpty) {
+      pipedInstances.insert(0, piped['instApiUrl']);
+    }
+
+    for (var pipedUrl in pipedInstances) {
+      try {
+        final request = await HttpClient().getUrl(Uri.parse('$pipedUrl/streams/$cleanId'));
+        final response = await request.close().timeout(const Duration(seconds: 5));
+        if (response.statusCode == 200) {
+          final bodyString = await response.transform(utf8.decoder).join();
+          final data = jsonDecode(bodyString);
+          final audioStreams = data['audioStreams'] as List;
+          if (audioStreams.isNotEmpty) {
+             printINFO("Successfully fetched stream from $pipedUrl");
+             return StreamProvider(
+               playable: true,
+               statusMSG: "OK",
+               audioFormats: audioStreams.map((e) => Audio(
+                  itag: int.tryParse(e['itag'].toString()) ?? 0,
+                  audioCodec: e['codec'].toString().contains('mp') ? Codec.mp4a : Codec.opus,
+                  bitrate: e['bitrate'] ?? 0,
+                  duration: 0,
+                  loudnessDb: 0.0,
+                  url: e['url'] ?? '',
+                  size: e['contentLength'] ?? 0,
+               )).toList(),
+               streamHeaders: null,
+             );
+          }
+        } else {
+          printINFO("Piped HTTP Error ($pipedUrl): ${response.statusCode}");
+        }
+      } catch(e) {
+        printINFO("Piped API Error ($pipedUrl): $e");
+      }
+    }
+
+    // Phase 2: youtube_explode_dart (Upgraded to v3)
+    final yt = YoutubeExplode();
+    try {
+      final res = await yt.videos.streamsClient.getManifest(cleanId).timeout(const Duration(seconds: 8));
+      final audio = res.audioOnly;
+      printINFO("Successfully fetched stream from youtube_explode_dart");
+      return StreamProvider(
+        playable: true,
+        statusMSG: "OK",
+        audioFormats: audio
+            .map((e) => Audio(
+                  itag: e.tag,
+                  audioCodec:
+                      e.audioCodec.contains('mp') ? Codec.mp4a : Codec.opus,
+                  bitrate: e.bitrate.bitsPerSecond,
+                  duration: 0,
+                  loudnessDb: 0.0,
+                  url: e.url.toString(),
+                  size: e.size.totalBytes,
+                ))
+            .toList(),
+        streamHeaders: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 15_7_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15',
+          'Referer': 'https://www.youtube.com/',
+        },
+      );
+    } catch (e) {
+      printINFO("YoutubeExplode Error: $e");
+      lastStatusMsg = "YT_Explode: ${e.toString().split('\n').first}";
+    }
+
+    // Phase 3: InnerTube Fallbacks (Will likely fail without PO Token, kept as last resort)
+    
     // Attempt 1: TV_EMBEDDED Client
-    // Currently the most reliable bypass for bot detection (yt-dlp recommended)
     final tvRes = await _fetchInnerTube(
       videoId: cleanId,
       clientName: 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
@@ -70,72 +148,6 @@ class StreamProvider {
     if (androidRes != null) {
       if (androidRes.playable) return androidRes;
       lastStatusMsg = androidRes.statusMSG;
-    }
-
-    // Attempt 4: youtube_explode_dart (Upgraded to v3)
-    final yt = YoutubeExplode();
-    try {
-      final res = await yt.videos.streamsClient.getManifest(cleanId);
-      final audio = res.audioOnly;
-      return StreamProvider(
-        playable: true,
-        statusMSG: "OK",
-        audioFormats: audio
-            .map((e) => Audio(
-                  itag: e.tag,
-                  audioCodec:
-                      e.audioCodec.contains('mp') ? Codec.mp4a : Codec.opus,
-                  bitrate: e.bitrate.bitsPerSecond,
-                  duration: 0,
-                  loudnessDb: 0.0,
-                  url: e.url.toString(),
-                  size: e.size.totalBytes,
-                ))
-            .toList(),
-        streamHeaders: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Referer': 'https://www.youtube.com/',
-        },
-      );
-    } catch (e) {
-      printINFO("YoutubeExplode Error: $e");
-      lastStatusMsg = "YT_Explode: ${e.toString().split('\\n').first}";
-    }
-
-    // Attempt 5: Piped API Fallback
-    try {
-      final piped = appPrefsBox.get('piped');
-      final pipedUrl = (piped != null && piped['instApiUrl'] != null && piped['instApiUrl'].isNotEmpty) 
-          ? piped['instApiUrl'] 
-          : "https://pipedapi.kavin.rocks";
-      
-      final request = await HttpClient().getUrl(Uri.parse('$pipedUrl/streams/$cleanId'));
-      final response = await request.close();
-      if (response.statusCode == 200) {
-        final bodyString = await response.transform(utf8.decoder).join();
-        final data = jsonDecode(bodyString);
-        final audioStreams = data['audioStreams'] as List;
-        if (audioStreams.isNotEmpty) {
-           return StreamProvider(
-             playable: true,
-             statusMSG: "OK",
-             audioFormats: audioStreams.map((e) => Audio(
-                itag: int.tryParse(e['itag'].toString()) ?? 0,
-                audioCodec: e['codec'].toString().contains('mp') ? Codec.mp4a : Codec.opus,
-                bitrate: e['bitrate'] ?? 0,
-                duration: 0,
-                loudnessDb: 0.0,
-                url: e['url'] ?? '',
-                size: e['contentLength'] ?? 0,
-             )).toList(),
-             streamHeaders: null,
-           );
-        }
-      } else {
-        printINFO("Piped HTTP Error: ${response.statusCode}");
-      }
-    } catch(e) {
-      printINFO("Piped API Error: $e");
     }
 
     return StreamProvider(playable: false, statusMSG: lastStatusMsg);
