@@ -49,10 +49,10 @@ echo -e "${YELLOW}--- Release Manager ---${NC}"
 read -p "Do you want to trigger a Cloud Release for these changes? (y/n): " trigger_release
 
 if [[ "$trigger_release" == "y" || "$trigger_release" == "Y" ]]; then
-    echo -e "${RED}WAIT! Have you updated pubspec.yaml, CHANGELOG.md, and release-notes.md?${NC}"
+    echo -e "${RED}WAIT! Have you updated pubspec.yaml, CHANGELOG.md, release-notes.md, and the in-app version string?${NC}"
     read -p "Proceed with release? (y/n): " confirm_docs
     if [[ "$confirm_docs" != "y" && "$confirm_docs" != "Y" ]]; then
-        echo -e "${BLUE}Release aborted. Please update the documentation and try again!${NC}"
+        echo -e "${BLUE}Release aborted. Please update the documentation and in-app version and try again!${NC}"
         exit 0
     fi
     
