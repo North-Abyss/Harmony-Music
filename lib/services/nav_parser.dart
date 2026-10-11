@@ -454,12 +454,47 @@ Map<String, dynamic> parseWatchTrack(Map<String, dynamic> data) {
   return track;
 }
 
-String? getTabBrowseId(Map<String, dynamic> watchNextRenderer, int tabId) {
-  final tabRenderer = watchNextRenderer['tabs']?[tabId]?['tabRenderer'];
-  if (tabRenderer == null || tabRenderer.containsKey('unselectable')) {
-    return null;
+String? getTabBrowseId(Map<String, dynamic> watchNextRenderer, int tabId,
+    {String? targetType}) {
+  final tabs = watchNextRenderer['tabs'] as List?;
+  if (tabs == null) return null;
+
+  if (targetType != null) {
+    for (final tab in tabs) {
+      final tabRenderer = tab['tabRenderer'];
+      if (tabRenderer == null || tabRenderer.containsKey('unselectable')) {
+        continue;
+      }
+      final endpoint = tabRenderer['endpoint']?['browseEndpoint'];
+      final bId = endpoint?['browseId']?.toString();
+      final pType = endpoint?['browseEndpointContextSupportedConfigs']
+              ?['browseEndpointContextMusicConfig']?['pageType']
+          ?.toString();
+      final title = tabRenderer['title']?.toString().toLowerCase();
+
+      if (targetType == 'RELATED') {
+        if ((bId != null && bId.startsWith('MPTR')) ||
+            pType == 'MUSIC_PAGE_TYPE_TRACK_RELATED' ||
+            (title != null && title.contains('related'))) {
+          return bId;
+        }
+      } else if (targetType == 'LYRICS') {
+        if ((bId != null && bId.startsWith('MPLY')) ||
+            pType == 'MUSIC_PAGE_TYPE_TRACK_LYRICS' ||
+            (title != null && title.contains('lyrics'))) {
+          return bId;
+        }
+      }
+    }
   }
-  return tabRenderer['endpoint']?['browseEndpoint']?['browseId'];
+
+  if (tabId < tabs.length) {
+    final tabRenderer = tabs[tabId]?['tabRenderer'];
+    if (tabRenderer != null && !tabRenderer.containsKey('unselectable')) {
+      return tabRenderer['endpoint']?['browseEndpoint']?['browseId'];
+    }
+  }
+  return null;
 }
 
 ///Parse playlist songs, Also used in Album Song parsing

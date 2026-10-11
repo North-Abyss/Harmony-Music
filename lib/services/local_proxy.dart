@@ -26,7 +26,19 @@ class LocalProxy {
             final clientReq = await client.getUrl(Uri.parse(task.url));
             if (task.headers != null) {
               task.headers!.forEach((key, value) {
-                clientReq.headers.set(key, value);
+                if (key.toLowerCase() == 'cookie') {
+                  final parts = value.split(';');
+                  for (final part in parts) {
+                    final trimmed = part.trim();
+                    final eqIdx = trimmed.indexOf('=');
+                    if (eqIdx != -1) {
+                      clientReq.cookies.add(Cookie(trimmed.substring(0, eqIdx), trimmed.substring(eqIdx + 1)));
+                    }
+                  }
+                  clientReq.headers.set(HttpHeaders.cookieHeader, value);
+                } else {
+                  clientReq.headers.set(key, value);
+                }
               });
             }
             

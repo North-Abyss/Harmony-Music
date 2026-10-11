@@ -53,7 +53,7 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
   // ignore: prefer_typing_uninitialized_variables
   dynamic currentIndex;
   int currentShuffleIndex = 0;
-  late String? currentSongUrl;
+  String? currentSongUrl;
   bool isPlayingUsingLockCachingSource = false;
   bool loopModeEnabled = false;
   bool queueLoopModeEnabled = false;
@@ -65,6 +65,9 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
 
   // list of shuffled queue songs ids
   List<String> shuffledQueue = [];
+
+  // Temporary storage for stream info pending playback confirmation
+  final Map<String, Map<String, dynamic>> _pendingCacheMap = {};
 
 
 
@@ -155,8 +158,41 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
         queueIndex: currentIndex,
       ));
 
+      // Cache stream URL ONLY after playback is confirmed playing and ready
+      if (playing && _player.processingState == ProcessingState.ready) {
+        try {
+          final currentSongId = queue.value.isNotEmpty && currentIndex < queue.value.length
+              ? queue.value[currentIndex].id
+              : null;
+          if (currentSongId != null && _pendingCacheMap.containsKey(currentSongId)) {
+            final pendingJson = _pendingCacheMap.remove(currentSongId);
+            if (pendingJson != null) {
+              final songsUrlCacheBox = Hive.box("SongsUrlCache");
+              songsUrlCacheBox.put(currentSongId, pendingJson);
+              printINFO("Playback confirmed for $currentSongId! Stream URL cached.");
+            }
+          }
+        } catch (e) {
+          printERROR("Error saving stream URL to cache on playback confirmation: $e");
+        }
+      }
+
       //print("set ${playbackState.value.queueIndex},${event.currentIndex}");
     }, onError: (Object e, StackTrace st) async {
+      // Invalidate cache for current song on playback failure
+      try {
+        final currentSongId = queue.value.isNotEmpty && currentIndex < queue.value.length
+            ? queue.value[currentIndex].id
+            : null;
+        if (currentSongId != null) {
+          final songsUrlCacheBox = Hive.box("SongsUrlCache");
+          if (songsUrlCacheBox.containsKey(currentSongId)) {
+            printINFO("Playback error for $currentSongId. Evicting stale cached URL.");
+            songsUrlCacheBox.delete(currentSongId);
+          }
+          _pendingCacheMap.remove(currentSongId);
+        }
+      } catch (_) {}
       if (e is PlayerException) {
         printERROR('Error code: ${e.code}');
         printERROR('Error message: ${e.message}');
@@ -880,8 +916,18 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
         if (streamInfoJson.runtimeType.toString().contains("Map") &&
             streamInfoJson.containsKey('streamHeaders') &&
             !isExpired(url: (streamInfoJson['lowQualityAudio']['url']))) {
-          printINFO("Got cached Url ($songId)");
-          streamInfo = HMStreamingData.fromJson(streamInfoJson);
+          
+          final cachedUrl = streamInfoJson['lowQualityAudio']['url'];
+          final headers = streamInfoJson['streamHeaders'] as Map?;
+          final isAlive = await _isCachedStreamUrlAlive(cachedUrl, headers);
+
+          if (isAlive) {
+            printINFO("Got cached Url ($songId)");
+            streamInfo = HMStreamingData.fromJson(streamInfoJson);
+          } else {
+            printINFO("Cached URL expired (403), refetching ($songId)");
+            songsUrlCacheBox.delete(songId);
+          }
         }
       }
 
@@ -890,13 +936,16 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
         Map<String, dynamic>? streamInfoJson;
         try {
           streamInfoJson =
-              await Isolate.run(() => getStreamInfo(songId, token));
+              await Isolate.run(() => _fetchStreamInfoInIsolate([songId, token]));
         } catch (e) {
-          printINFO("Isolate error (likely Hot Reload issue): \$e");
+          printINFO("Isolate fetch failed: $e, fetching directly");
           streamInfoJson = await getStreamInfo(songId, token);
         }
         streamInfo = HMStreamingData.fromJson(streamInfoJson);
-        if (streamInfo.playable) songsUrlCacheBox.put(songId, streamInfoJson);
+        // Do not cache immediately; wait until song plays successfully
+        if (streamInfo.playable && streamInfoJson != null) {
+          _pendingCacheMap[songId] = streamInfoJson;
+        }
       }
 
       streamInfo.setQualityIndex(qualityIndex as int);
@@ -904,6 +953,26 @@ class MyAudioHandler extends BaseAudioHandler with GetxServiceMixin {
     }
   }
 }
+
+Future<bool> _isCachedStreamUrlAlive(String cachedUrl, Map? headers) async {
+  try {
+    final client = HttpClient();
+    final req = await client.getUrl(Uri.parse(cachedUrl));
+    if (headers != null) {
+      headers.forEach((k, v) => req.headers.set(k.toString(), v.toString()));
+    }
+    final res = await req.close().timeout(const Duration(seconds: 2));
+    final alive = (res.statusCode != 403 && res.statusCode != 404);
+    client.close(force: true);
+    return alive;
+  } catch (_) {
+    return false;
+  }
+}
+
+@pragma('vm:entry-point')
+Future<Map<String, dynamic>> _fetchStreamInfoInIsolate(List<dynamic> args) =>
+    getStreamInfo(args[0] as String, args[1]);
 
 class UrlError extends Error {
   String message() => 'Unable to fetch url';

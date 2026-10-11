@@ -444,6 +444,11 @@ class PlayerController extends GetxController
             .indexWhere((element) => element.id == currentSong.value!.id);
         await _checkFav();
         await _addToRP(currentSong.value!);
+        if (Hive.box("AppPrefs").get("discoverContentType") == "BOLI" &&
+            Get.isRegistered<HomeScreenController>()) {
+          Get.find<HomeScreenController>()
+              .changeDiscoverContent("BOLI", songId: mediaItem.id);
+        }
         if (isRadioModeOn && (currentSong.value!.id == currentQueue.last.id)) {
           await _addRadioContinuation(radioInitiatorItem!);
         }

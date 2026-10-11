@@ -1,3 +1,13 @@
+# 1.13.4
+* Integrated `yt-dlp` VISIONOS streaming client architecture with automated session cookie and visitor token management to bypass YouTube bot detection.
+* Added secondary `TVHTML5` Samsung TV client fallback for Made for Kids and specialized media streams.
+* Implemented play-success stream URL caching (URLs are only cached once playback is confirmed healthy and active).
+* Added automatic cache eviction and transparent refetch on playback error or stream invalidation.
+* Fixed Discover ("Based on last interaction") recommendations by dynamically resolving YouTube Music's updated tabs structure.
+* Enhanced `LocalProxy` with complete HTTP cookie header forwarding for seamless playback on desktop and mobile.
+* Added references to `yt-dlp` and `ytdlnis` open-source implementations.
+* Integrated `git-sync.sh` repository synchronization and release management tooling.
+
 # 1.13.3
 * Upgraded `youtube_explode_dart` to v3.1.0 to bypass latest YouTube bot detection protocols.
 * Replaced deprecated InnerTube streaming clients with reliable `TV_EMBEDDED` and `WEB_EMBEDDED` clients.

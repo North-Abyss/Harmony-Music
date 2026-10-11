@@ -3,6 +3,8 @@
 # 🚀 **This repository is the continued version of Harmony Music.**
 This app is a fork of the original [Harmony Music app by anandnet](https://github.com/anandnet/Harmony-Music), with additional features and improvements actively added and maintained by **North-Abyss**.
 
+Educational Purpose Only!
+
 </div>
 
 <img src="https://github.com/North-Abyss/Harmony-Music/raw/main/images/cover.png" width="1200" >
@@ -110,7 +112,9 @@ Author of this Sotware is aware of the possibility of such damages and known def
 <a href = 'https://github.com/sigma67'>sigma67</a>'s unofficial ytmusic api project<br/>
 App UI inspired by <a href = 'https://github.com/vfsfitvnm'>vfsfitvnm</a>'s ViMusic<br/>
 Synced lyrics provided by <a href = 'https://lrclib.net' >LRCLIB</a> <br/>
-<a href = 'https://piped.video' >Piped</a> for playlists.
+<a href = 'https://piped.video' >Piped</a> for playlists.<br/>
+<a href = 'https://github.com/deniscerri/ytdlnis' >ytdlnis</a> for reference implementations.<br/>
+<a href = 'https://github.com/yt-dlp/yt-dlp' >yt-dlp</a> for reference streaming architecture.
 
 #### Major Packages used
 * just_audio: ^0.9.46  -  audio player for android

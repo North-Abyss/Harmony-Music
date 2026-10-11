@@ -139,10 +139,15 @@ class HomeScreenController extends GetxController {
           if (songId != null) {
             final rel = (await _musicServices.getContentRelatedToSong(
                 songId, getContentHlCode()));
-            final con = rel.removeAt(0);
-            quickPicks.value =
-                QuickPicks(List<MediaItem>.from(con["contents"]));
-            middleContentTemp.addAll(rel);
+            if (rel.isNotEmpty &&
+                rel[0]["contents"] != null &&
+                (rel[0]["contents"] as List).isNotEmpty) {
+              final con = rel.removeAt(0);
+              quickPicks.value = QuickPicks(
+                  List<MediaItem>.from(con["contents"]),
+                  title: con["title"] ?? "Discover");
+              middleContentTemp.addAll(rel);
+            }
           }
         } catch (e) {
           printERROR(
@@ -229,13 +234,18 @@ class HomeScreenController extends GetxController {
           final value = await _musicServices.getContentRelatedToSong(
               songId, getContentHlCode());
           middleContent.value = _setContentList(value);
-          if (value.isNotEmpty && (value[0]['title']).contains("like")) {
-            quickPicks_ =
-                QuickPicks(List<MediaItem>.from(value[0]["contents"]));
+          if (value.isNotEmpty &&
+              value[0]["contents"] != null &&
+              (value[0]["contents"] as List).isNotEmpty) {
+            quickPicks_ = QuickPicks(
+                List<MediaItem>.from(value[0]["contents"]),
+                title: value[0]["title"] ?? "Discover");
             Hive.box("AppPrefs").put("recentSongId", songId);
           }
           // ignore: empty_catches
-        } catch (e) {}
+        } catch (e) {
+          printERROR("changeDiscoverContent error: $e");
+        }
       }
     }
     if (quickPicks_ == null) return;
